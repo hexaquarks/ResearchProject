@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 PATH = Tuple[List[float]]
 DPI = 120
+SIZE = 128 #number of pixels
 
 class Util:
     @staticmethod
@@ -27,6 +28,10 @@ class Brownian:
     def __init__(self, x0 = 0):
         assert (type(x0) == float or type(x0) == int or x0 is None), "Expect a float or None for the initial value"
 
+        self.particlesLocation: List[Tuple[int]] = [] # to track particles position in time
+        self.grid = self.initializeGrid()
+        self.initializeParticles()
+        
         self.x0 = float(x0) 
         self._x, self._y = self.generateNormal(500)
     
@@ -34,6 +39,17 @@ class Brownian:
     def get_path(self) -> PATH:
         return (self._x, self._y)
     
+    def initializeGrid(self):
+        out = np.zeros((SIZE, SIZE), dtype = int)
+        return out
+    
+    def initializeParticles(self, nbPoints: int = 10):
+        np.put(self.grid, np.random.choice(
+            range(SIZE * SIZE), nbPoints, replace=False), 1)
+        for i in range(SIZE):
+            for j in range(SIZE):
+                if self.grid[i][j] == 1: self.particlesLocation.append((i, j))
+        
     def generateRandomWalks(self, steps:int = 100) -> PATH:
         w = np.ones(steps) * self.x0 # array of size steps of els 0.
         
@@ -64,20 +80,21 @@ colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 
 fig, ax = plt.subplots(figsize=[8, 6])
-
-for i, path in enumerate(paths):
-    ax.plot(path[0], path[1], c = colors[i])
+# for i, path in enumerate(paths):
+#     ax.plot(path[0], path[1], c = colors[i])
     
-    last_point = Util.get_last_point(path)
-    ax.plot(last_point[0], last_point[1], 
-             marker = markers[i], markersize = 17,
-             markerfacecolor = colors[i])
+#     last_point = Util.get_last_point(path)
+#     ax.plot(last_point[0], last_point[1], 
+#              marker = markers[i], markersize = 17,
+#              markerfacecolor = colors[i])
     
-x_min, x_max, y_min, y_max = Util.get_bounds(paths)
-MAX = max(abs(el) for el in [x_min, x_max, y_min, y_max])
-MAX *= 1.1
-ax.set_xlim(-MAX, MAX)
-ax.set_ylim(-MAX, MAX)
+# x_min, x_max, y_min, y_max = Util.get_bounds(paths)
+# MAX = max(abs(el) for el in [x_min, x_max, y_min, y_max])
+# MAX *= 1.1
+# ax.set_xlim(-MAX, MAX)
+# ax.set_ylim(-MAX, MAX)
+b = Brownian()
+plt.imshow(b.grid, cmap='Greys', interpolation='none')
 
 ## ticks 
 ax.tick_params(axis='y',
@@ -94,7 +111,7 @@ ax.patch.set_edgecolor('black')
 ax.patch.set_linewidth('2') 
 
 
-plt.figure(figsize= (128 / DPI, 128 / DPI), dpi = DPI)
+#plt.figure(figsize = (128 / DPI, 128 / DPI), dpi = DPI)
 plt.show(block=True)
 
 fig.tight_layout()
