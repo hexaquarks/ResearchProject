@@ -3,10 +3,12 @@ from matplotlib.pyplot import figure
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes,mark_inset
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 PATH = Tuple[List[float]]
 DPI = 120
-SIZE = 128 #number of pixels
+RADIUS = 250
+RADIUS_PADDING = 10
 
 class Util:
     @staticmethod
@@ -29,8 +31,8 @@ class Brownian:
         assert (type(x0) == float or type(x0) == int or x0 is None), "Expect a float or None for the initial value"
 
         self.particlesLocation: List[Tuple[int]] = [] # to track particles position in time
-        self.grid = self.initializeGrid()
-        self.initializeParticles()
+        self.initializeGrid()
+        #self.initializeParticles()
         
         self.x0 = float(x0) 
         self._x, self._y = self.generateNormal(500)
@@ -39,15 +41,33 @@ class Brownian:
     def get_path(self) -> PATH:
         return (self._x, self._y)
     
+    @property 
+    def get_x_coords(self) -> List:
+        return list(zip(*self.particlesLocation))[0]
+    
+    @property 
+    def get_y_coords(self) -> List:
+        return list(zip(*self.particlesLocation))[1]
+    
     def initializeGrid(self):
-        out = np.zeros((SIZE, SIZE), dtype = int)
-        return out
+        mem: List[Tuple] = []
+        
+        def recc(self, x = 0, y = 0):
+            x = random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING)
+            y = random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING)
+            while (x, y) in mem:
+                return recc(self, x, y)
+            mem.append((x, y))
+            return x,y
+                
+        for i in range(5):
+            self.particlesLocation.append(recc(self))
     
     def initializeParticles(self, nbPoints: int = 10):
         np.put(self.grid, np.random.choice(
-            range(SIZE * SIZE), nbPoints, replace=False), 1)
-        for i in range(SIZE):
-            for j in range(SIZE):
+            range(RADIUS * RADIUS), nbPoints, replace = False), 1)
+        for i in range(RADIUS):
+            for j in range(RADIUS):
                 if self.grid[i][j] == 1: self.particlesLocation.append((i, j))
         
     def generateRandomWalks(self, steps:int = 100) -> PATH:
@@ -79,7 +99,7 @@ paths: List[PATH] = [Brownian().get_path for i in range(NUMBER_OF_PATHS)]
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 
-fig, ax = plt.subplots(figsize=[8, 6])
+fig, ax = plt.subplots(figsize=[5, 5], dpi = 100)
 # for i, path in enumerate(paths):
 #     ax.plot(path[0], path[1], c = colors[i])
     
@@ -94,7 +114,7 @@ fig, ax = plt.subplots(figsize=[8, 6])
 # ax.set_xlim(-MAX, MAX)
 # ax.set_ylim(-MAX, MAX)
 b = Brownian()
-plt.imshow(b.grid, cmap='Greys', interpolation='none')
+#plt.imshow(b.grid, cmap='Greys', interpolation='none')
 
 ## ticks 
 ax.tick_params(axis='y',
@@ -112,6 +132,10 @@ ax.patch.set_linewidth('2')
 
 
 #plt.figure(figsize = (128 / DPI, 128 / DPI), dpi = DPI)
+
+ax.scatter(b.get_x_coords, b.get_y_coords, s=15, color = 'r')
+ax.set_xlim(-250, 250)
+ax.set_ylim(-250, 250)
 plt.show(block=True)
 
 fig.tight_layout()

@@ -63,23 +63,8 @@ paths: List[PATH] = [Brownian().get_path for i in range(NUMBER_OF_PATHS)]
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 
-fig, ax = plt.subplots(figsize=[8, 6])
+fig, ax = plt.subplots(figsize=[5, 5])
 
-for i, path in enumerate(paths):
-    ax.plot(path[0], path[1], c = colors[i])
-    
-    last_point = Util.get_last_point(path)
-    ax.plot(last_point[0], last_point[1], 
-             marker = markers[i], markersize = 17,
-             markerfacecolor = colors[i])
-    
-x_min, x_max, y_min, y_max = Util.get_bounds(paths)
-MAX = max(abs(el) for el in [x_min, x_max, y_min, y_max])
-MAX *= 1.1
-ax.set_xlim(-MAX, MAX)
-ax.set_ylim(-MAX, MAX)
-
-## ticks 
 ax.tick_params(axis='y',
                direction="in",
                right=True, labelsize=18)
@@ -93,8 +78,10 @@ ax.set_ylabel(r"y", fontsize=16)
 ax.patch.set_edgecolor('black')  
 ax.patch.set_linewidth('2') 
 
-
-plt.figure(figsize= (128 / DPI, 128 / DPI), dpi = DPI)
+x = [0, 10]
+ax.plot(x, x, markersize=300,markerfacecolor="r", color = 'r')
+ax.set_xlim(-250, 250)
+ax.set_ylim(-250, 250)
 plt.show(block=True)
 
 fig.tight_layout()
