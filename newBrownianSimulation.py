@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from matplotlib.pyplot import figure
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes,mark_inset
+from matplotlib.animation import FuncAnimation
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -43,11 +44,11 @@ class Brownian:
     
     @property 
     def get_x_coords(self) -> List:
-        return list(zip(*self.particlesLocation))[0]
+        return list(list(zip(*self.particlesLocation))[0])
     
     @property 
     def get_y_coords(self) -> List:
-        return list(zip(*self.particlesLocation))[1]
+        return list(list(zip(*self.particlesLocation))[1])
     
     def initializeGrid(self):
         mem: List[Tuple] = []
@@ -98,8 +99,40 @@ NUMBER_OF_PATHS: int = 6
 paths: List[PATH] = [Brownian().get_path for i in range(NUMBER_OF_PATHS)]
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
+b = Brownian()
 
 fig, ax = plt.subplots(figsize=[5, 5], dpi = 100)
+xdata, ydata = b.get_x_coords, b.get_y_coords
+ln, = ax.plot(xdata, ydata, markersize=15, color = 'r')
+
+def init():
+    ax.tick_params(axis='y',
+               direction="in",
+               right=True, labelsize=18)
+    ax.tick_params(axis='x', direction="in" , top=True,bottom=True, labelsize=18)
+
+    ## legends and utilities
+    ax.set_xlabel(r"x", fontsize=16)
+    ax.set_ylabel(r"y", fontsize=16)
+
+    ## border colors
+    ax.patch.set_edgecolor('black')  
+    ax.patch.set_linewidth('2') 
+
+    ax.set_xlim(-250, 250)
+    ax.set_ylim(-250, 250)
+    return ln,
+
+def update(frame):
+    xdata.append(frame)
+    ydata.append(frame)
+    print(xdata)
+    ln.set_data(xdata, ydata)
+    return ln,
+temp = np.arange(-100, 100, 1.0).tolist()
+ani = FuncAnimation(fig, update, frames=temp,
+                    init_func=init, blit=True)
+
 # for i, path in enumerate(paths):
 #     ax.plot(path[0], path[1], c = colors[i])
     
@@ -113,29 +146,12 @@ fig, ax = plt.subplots(figsize=[5, 5], dpi = 100)
 # MAX *= 1.1
 # ax.set_xlim(-MAX, MAX)
 # ax.set_ylim(-MAX, MAX)
-b = Brownian()
+
 #plt.imshow(b.grid, cmap='Greys', interpolation='none')
-
-## ticks 
-ax.tick_params(axis='y',
-               direction="in",
-               right=True, labelsize=18)
-ax.tick_params(axis='x', direction="in" , top=True,bottom=True, labelsize=18)
-
-## legends and utilities
-ax.set_xlabel(r"x", fontsize=16)
-ax.set_ylabel(r"y", fontsize=16)
-
-## border colors
-ax.patch.set_edgecolor('black')  
-ax.patch.set_linewidth('2') 
 
 
 #plt.figure(figsize = (128 / DPI, 128 / DPI), dpi = DPI)
 
-ax.scatter(b.get_x_coords, b.get_y_coords, s=15, color = 'r')
-ax.set_xlim(-250, 250)
-ax.set_ylim(-250, 250)
 plt.show(block=True)
 
 fig.tight_layout()
