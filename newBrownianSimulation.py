@@ -23,6 +23,7 @@ class Util:
     @staticmethod
     def get_last_point(path: PATH) -> Tuple[int]:
         return path[0][-1], path[1][-1]
+    
 
 class Brownian:
     global STEPS
@@ -32,30 +33,45 @@ class Brownian:
         assert (type(x0) == float or type(x0) == int or x0 is None), "Expect a float or None for the initial value"
 
         self.particlesLocation: List[Tuple[int]] = [] # to track particles position in time
+        self.paths: List[List[Tuple[int]]] = []
         self.initializeGrid()
+        self.initializePaths()
         #self.initializeParticles()
         
         self.x0 = float(x0) 
         self._x, self._y = self.generateNormal(500)
     
+    def initializePaths(self):
+        for coordinate in self.particlesLocation:
+            self.paths.append([coordinate])
+            
+    def updatePath(self, idx):
+        x_dir, y_dir = [np.random.normal() * np.random.choice([1, -1]) * 3 for _ in range(2)]
+        x, y = self.paths[idx][-1]
+        
+        #print("appending at ", idx, " over size : ", len(paths))
+        self.paths[idx].append((x + x_dir, y + y_dir))
+        
+    def update(self):
+        for i in range(len(self.paths)):
+            self.updatePath(i);
+            
     @property
     def get_path(self) -> PATH:
         return (self._x, self._y)
     
-    @property 
-    def get_x_coords(self) -> List:
-        return list(list(zip(*self.particlesLocation))[0])
+    def get_x_coords(self, idx) -> List:
+        return list(list(zip(*self.paths[idx]))[0])
     
-    @property 
-    def get_y_coords(self) -> List:
-        return list(list(zip(*self.particlesLocation))[1])
+    def get_y_coords(self, idx) -> List:
+        return list(list(zip(*self.paths[idx]))[1])
     
     def initializeGrid(self):
         mem: List[Tuple] = []
         
         def recc(self, x = 0, y = 0):
-            x = random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING)
-            y = random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING)
+            x = int(random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING))
+            y = int(random.randint(-(RADIUS - RADIUS_PADDING), RADIUS - RADIUS_PADDING))
             while (x, y) in mem:
                 return recc(self, x, y)
             mem.append((x, y))
@@ -63,6 +79,7 @@ class Brownian:
                 
         for i in range(5):
             self.particlesLocation.append(recc(self))
+        print(self.particlesLocation)
     
     def initializeParticles(self, nbPoints: int = 10):
         np.put(self.grid, np.random.choice(
@@ -96,14 +113,14 @@ class Brownian:
 
 NUMBER_OF_PATHS: int = 6
 
-paths: List[PATH] = [Brownian().get_path for i in range(NUMBER_OF_PATHS)]
+#paths: List[PATH] = [Brownian().get_path for i in range(NUMBER_OF_PATHS)]
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 b = Brownian()
 
 fig, ax = plt.subplots(figsize=[5, 5], dpi = 100)
-xdata, ydata = b.get_x_coords, b.get_y_coords
-ln, = ax.plot(xdata, ydata, markersize=15, color = 'r')
+
+plots: List = [ax.plot(b.get_x_coords(i), b.get_y_coords(i), markersize=15, color = colors[i])[0] for i in range(5)] 
 
 def init():
     ax.tick_params(axis='y',
@@ -121,14 +138,14 @@ def init():
 
     ax.set_xlim(-250, 250)
     ax.set_ylim(-250, 250)
-    return ln,
+    return plots
 
 def update(frame):
-    xdata.append(frame)
-    ydata.append(frame)
-    print(xdata)
-    ln.set_data(xdata, ydata)
-    return ln,
+    b.update()
+    for i, plot in enumerate(plots):
+        plot.set_data(b.get_x_coords(i), b.get_y_coords(i))
+    return plots
+
 temp = np.arange(-100, 100, 1.0).tolist()
 ani = FuncAnimation(fig, update, frames=temp,
                     init_func=init, blit=True)
