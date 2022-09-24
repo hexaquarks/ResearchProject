@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 from typing import List, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
+from util import *
 
 RADIUS = 250
 
@@ -14,7 +15,7 @@ DPI = 100
 def plot(b):
     fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI)
 
-    plots: List = [ax.plot(b.get_x_coords(i), b.get_y_coords(i), markersize=15, color = colors[i])[0] for i in range(5)] 
+    plots: List = [ax.plot(Util.get_x_coords(i), Util.get_y_coords(i), markersize=15, color = colors[i])[0] for i in range(5)] 
 
     def initializeAnimation():
         ax.tick_params(axis='y',
@@ -40,8 +41,8 @@ def plot(b):
             plot.set_data(b.get_x_coords(i), b.get_y_coords(i))
         return plots
 
-    ani = FuncAnimation(fig, updateAnimation, init_func = initializeAnimation, 
-                        blit = True, interval = 10)
+    animation = FuncAnimation(fig, updateAnimation, init_func = initializeAnimation, 
+                blit = True, interval = 135)
 
     plt.show(block=True)
 
