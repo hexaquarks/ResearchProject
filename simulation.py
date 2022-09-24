@@ -16,20 +16,22 @@ class Simulation:
         self.initializePaths()
         
     def initializePaths(self):
-        for coordinate in self.particlesLocation:
-            self.paths.append([coordinate])
+        self.paths.extend([[coordinate] for coordinate in self.particlesLocation])
             
     def initializeParticles(self):
         mem: List[Tuple] = []
         
-        def recc(self, x = 0, y = 0):
-            x, y = [int(random.randint(-(CORRECTED_RADIUS), CORRECTED_RADIUS)) for _ in range(2)]
+        def getRandomCanvasValue(self):
+            return int(random.randint(-(CORRECTED_RADIUS), CORRECTED_RADIUS))
+        
+        def rec(self, x = 0, y = 0):
+            x, y = [getRandomCanvasValue(self) for _ in range(2)]
             while (x, y) in mem:
-                return recc(self, x, y)
+                return rec(self, x, y)
             mem.append((x, y))
             return x,y
         
-        self.particlesLocation.extend([recc(self) for _ in range(5)])
+        self.particlesLocation.extend([rec(self) for _ in range(5)])
         print(self.particlesLocation)
         
     
