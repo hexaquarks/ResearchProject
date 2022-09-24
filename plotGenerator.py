@@ -15,7 +15,7 @@ DPI = 100
 def plot(b):
     fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI)
 
-    plots: List = [ax.plot(Util.get_x_coords(i), Util.get_y_coords(i), markersize=15, color = colors[i])[0] for i in range(5)] 
+    plots: List = [ax.plot(Util.get_x_coordinates(b.paths[i]), Util.get_y_coordinates(b.paths[i]), markersize=15, color = colors[i])[0] for i in range(5)] 
 
     def initializeAnimation():
         ax.tick_params(axis='y',
@@ -38,12 +38,11 @@ def plot(b):
     def updateAnimation(frame):
         b.update()
         for i, plot in enumerate(plots):
-            plot.set_data(b.get_x_coords(i), b.get_y_coords(i))
+            plot.set_data(Util.get_x_coordinates(b.paths[i]), Util.get_y_coordinates(b.paths[i]))
         return plots
 
     animation = FuncAnimation(fig, updateAnimation, init_func = initializeAnimation, 
-                blit = True, interval = 135)
+                blit = True, interval = 250)
 
     plt.show(block=True)
-
     fig.tight_layout()
