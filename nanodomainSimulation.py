@@ -1,9 +1,10 @@
 from typing import List, Tuple
 import numpy as np
+import matplotlib.pyplot as plt
 
 from simulation import *
 
-class Brownian(Simulation):
+class Nanodomain(Simulation):
     global STEPS
     STEPS = 500
     
@@ -18,4 +19,4 @@ class Brownian(Simulation):
         
     def update(self):
         [self.updatePath(i) for i in range(self.numberOfParticles)]
-
+    

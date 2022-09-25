@@ -1,6 +1,13 @@
 from typing import List, Tuple
 import random
+from enum import Enum
 
+class SimulationType(Enum):
+     BROWNIAN = 1
+     NANODOMAIN = 2
+     HOPDIFFUSION = 3     
+
+PATH = Tuple[List[float]]
 DPI = 100
 RADIUS_PADDING = 10
 RADIUS = 250
@@ -34,4 +41,3 @@ class Simulation:
         self.particlesLocation.extend([rec(self) for _ in range(5)])
         print(self.particlesLocation)
         
-    
