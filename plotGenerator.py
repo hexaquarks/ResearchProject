@@ -13,18 +13,31 @@ colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 DPI = 100
 
-# 1 pixel = 1 nm
-# ==> 
-
+def get_nanodomain_attributes(sim):
+    return list(map(
+        lambda coord, 
+        radius: (coord, radius), 
+        sim.get_nanodomain_coordinates(), 
+        sim.get_nanodomain_radii()
+    ))
+                
 def handle_nanodomain(ax, sim):
     nanodomains = [
-        plt.Circle(param[0], param[1], color='black', alpha = 0.1) for param in 
-        list(map(lambda coord, radius: (coord, radius), sim.get_nanodomain_coordinates(), sim.get_nanodomain_radii()))
+        plt.Circle(
+            param[0], 
+            param[1], 
+            color='black', 
+            alpha = 0.1) 
+        for param in get_nanodomain_attributes(sim)
     ]
     ax.add_patch( _ for _ in nanodomains)
 
 def handle_hop_diffusion(ax):
+    # TODO
     pass
+
+def get_coordinates_for_plot(sim, idx):
+    return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
 
 def set_plot_parameters(ax):
     ax.tick_params(axis='y',
@@ -46,22 +59,31 @@ def set_plot_parameters(ax):
 def plot(sim: Simulation, type: SimulationType):
     fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI)
 
-    plots: List = [ax.plot(Util.get_x_coordinates(sim.paths[i]), Util.get_y_coordinates(sim.paths[i]), markersize=15, color = colors[i])[0] for i in range(5)] 
+    plots: List = [
+        ax.plot(
+            *get_coordinates_for_plot(sim, i), 
+            markersize=15, color = colors[i])[0] 
+        for i in range(5)
+    ] 
 
     def initialize_animation():
         set_plot_parameters(ax)
-        if type == SimulationType.BROWNIAN: return plots
-        handle_nanodomain(ax, sim) if (type == SimulationType.Nanodomain) else handle_hop_diffusion(ax)
+        if type == SimulationType.NANODOMAIN: handle_nanodomain(ax, sim)
+        elif type == SimulationType.HOPDIFFUSION: handle_hop_diffusion(ax, sim)
         return plots
 
     def update_animation(frame):
         sim.update()
         for i, plot in enumerate(plots):
-            plot.set_data(Util.get_x_coordinates(sim.paths[i]), Util.get_y_coordinates(sim.paths[i]))
+            plot.set_data(*get_coordinates_for_plot(sim, i))
         return plots
 
-    animation = FuncAnimation(fig, update_animation, init_func = initialize_animation, 
-                blit = True, interval = 250)
+    animation = FuncAnimation(
+        fig, 
+        update_animation, 
+        init_func = initialize_animation, 
+        interval = 20
+    )
 
     plt.show(block=True)
     fig.tight_layout()

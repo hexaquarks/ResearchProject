@@ -1,4 +1,6 @@
 from typing import List, Tuple
+import numpy as np
+import random
 
 class Util:
     @staticmethod
@@ -20,3 +22,7 @@ class Util:
     @staticmethod
     def get_y_coordinates(path) -> List:
         return list(list(zip(*path))[1])
+    
+    @staticmethod
+    def get_random_normal_direction():
+        return np.random.normal() * np.random.choice([1, -1])

@@ -2,18 +2,17 @@ from typing import List, Tuple
 import numpy as np
 
 from simulation import *
+from util import *
 
 class Brownian(Simulation):
-    global STEPS
-    STEPS = 500
     
     def __init__(self, n = 5):
         super().__init__(n)
         
     def updatePath(self, idx):
-        x_dir, y_dir = [np.random.normal() * np.random.choice([1, -1]) * 3 for _ in range(2)]
+        x_dir, y_dir = [
+            Util.get_random_normal_direction() * MEMBRANE_DIFFUSION_FATOR_CORRECTED for _ in range(2)]
         x, y = self.paths[idx][-1]
-        
         self.paths[idx].append((x + x_dir, y + y_dir))
         
     def update(self):
