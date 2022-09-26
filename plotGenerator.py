@@ -37,6 +37,9 @@ def handle_hop_diffusion(ax):
 def get_coordinates_for_plot(sim, idx):
     return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
 
+def get_coordinates_for_heads(sim, idx):
+    return Util.get_last_point(sim.paths[idx])
+
 def set_plot_parameters(ax):
     ax.tick_params(axis='y',
             direction="in",
@@ -44,8 +47,8 @@ def set_plot_parameters(ax):
     ax.tick_params(axis='x', direction="in" , top=True,bottom=True, labelsize=18)
 
     ## legends and utilities
-    ax.set_xlabel(r"x", fontsize=16)
-    ax.set_ylabel(r"y", fontsize=16)
+    ax.set_xlabel(r"nm", fontsize=16)
+    ax.set_ylabel(r"nm", fontsize=16)
 
     ## border colors
     ax.patch.set_edgecolor('black')  
@@ -57,24 +60,34 @@ def set_plot_parameters(ax):
 def plot(sim: Simulation, type: SimulationType):
     fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI)
 
-    plots: List = [
+    path_plots: List = [
         ax.plot(
             *get_coordinates_for_plot(sim, i), 
             markersize=15, color = colors[i])[0] 
         for i in range(5)
     ] 
+    
+    head_plots: List = [
+        ax.plot(
+            *get_coordinates_for_heads(sim, i), 
+            markersize=7, color = colors[i], marker = markers[i], 
+            markerfacecolor="white")[0] 
+        for i in range(5)
+    ]
 
     def initialize_animation():
         set_plot_parameters(ax)
         if type == SimulationType.NANODOMAIN: handle_nanodomain(ax, sim)
         elif type == SimulationType.HOPDIFFUSION: handle_hop_diffusion(ax, sim)
-        return plots
+        return path_plots
 
     def update_animation(frame):
         sim.update()
-        for i, plot in enumerate(plots):
+        for i, plot in enumerate(path_plots):
             plot.set_data(*get_coordinates_for_plot(sim, i))
-        return plots
+        for i, head_marker in enumerate(head_plots):
+            head_marker.set_data(*get_coordinates_for_heads(sim, i))
+        return path_plots
 
     animation = FuncAnimation(
         fig, 

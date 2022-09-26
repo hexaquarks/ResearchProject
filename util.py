@@ -17,7 +17,7 @@ class Util:
         
     @staticmethod
     def get_last_point(path) -> Tuple[int]:
-        return path[0][-1], path[1][-1]
+        return path[-1][0], path[-1][1]
     
     @staticmethod
     def get_x_coordinates(path) -> List:
