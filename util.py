@@ -13,7 +13,7 @@ class Util:
     
     @staticmethod
     def compute_distance(p1: Tuple, p2: Tuple) -> float:
-        return np.sqrt(np.abs(p2[0] - p1[0]) + np.abs(p2[1] - p1[1]))
+        return np.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
         
     @staticmethod
     def get_last_point(path) -> Tuple[int]:
