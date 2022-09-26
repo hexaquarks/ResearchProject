@@ -13,24 +13,23 @@ colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 DPI = 100
 
-def get_nanodomain_attributes(sim):
+def get_nanodomain_attributes(sim: Nanodomain):
     return list(map(
-        lambda coord, 
-        radius: (coord, radius), 
-        sim.get_nanodomain_coordinates(), 
-        sim.get_nanodomain_radii()
+        lambda coord, radius: (coord, radius), 
+        sim.get_nanodomain_coordinates, 
+        sim.get_nanodomain_radii
     ))
                 
-def handle_nanodomain(ax, sim):
+def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
         plt.Circle(
             param[0], 
-            param[1], 
+            param[1],
             color='black', 
             alpha = 0.1) 
         for param in get_nanodomain_attributes(sim)
     ]
-    ax.add_patch( _ for _ in nanodomains)
+    #ax.add_patch( _ for _ in nanodomains)
 
 def handle_hop_diffusion(ax):
     # TODO

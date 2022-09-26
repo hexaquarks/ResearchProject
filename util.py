@@ -12,6 +12,10 @@ class Util:
         return X_MIN, X_MAX, Y_MIN, Y_MAX
     
     @staticmethod
+    def compute_distance(p1: Tuple, p2: Tuple) -> float:
+        return np.sqrt(np.abs(p2[0] - p1[0]) + np.abs(p2[1] - p1[1]))
+        
+    @staticmethod
     def get_last_point(path) -> Tuple[int]:
         return path[0][-1], path[1][-1]
     

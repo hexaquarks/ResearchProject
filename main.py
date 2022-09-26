@@ -4,7 +4,7 @@ from util import *
 from brownianSimulation import *
 from nanodomainSimulation import *    
 
-brownian = Brownian()
-#nanoDomain = Nanodomain()
+#brownian = Brownian()
+nanoDomain = Nanodomain()
 #hopDiffusion = HopDiffusion();
-plot(brownian, SimulationType.BROWNIAN)
+plot(nanoDomain, SimulationType.NANODOMAIN)
