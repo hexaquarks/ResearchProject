@@ -13,13 +13,6 @@ RADIUS = 250
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 DPI = 100
-
-def get_nanodomain_attributes(sim: Nanodomain) -> List[Tuple]:
-    return list(map(
-        lambda coord, radius: (coord, radius), 
-        sim.get_nanodomain_coordinates, 
-        sim.get_nanodomain_radii
-    ))
                 
 def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
@@ -27,7 +20,7 @@ def handle_nanodomain(ax, sim: Nanodomain):
             *param,
             color='black', 
             alpha = 0.2) 
-        for param in get_nanodomain_attributes(sim)
+        for param in sim.get_nanodomain_attributes()
     ]
     [ax.add_patch(nanodomain) for nanodomain in nanodomains]
 
