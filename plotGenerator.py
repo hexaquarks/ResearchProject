@@ -25,15 +25,13 @@ def handle_nanodomain(ax, sim: Nanodomain):
     [ax.add_patch(nanodomain) for nanodomain in nanodomains]
 
 def handle_hop_diffusion(ax, sim: HopDiffusion):
-    p = sim.rectangle_coordinates
-    print(p)
     compartments = [
         plt.Rectangle(
             tuple((param[0], param[1])),
             param[2], param[3],
             color='black',
             alpha=0.7)
-        for param in sim.rectangle_coordinates
+        for param in sim.boundary_coordinates_for_plot
     ]
     [ax.add_patch(boundary) for boundary in compartments]
 
