@@ -5,6 +5,6 @@ from brownianSimulation import *
 from nanodomainSimulation import *    
 
 #brownian = Brownian()
-nanoDomain = Nanodomain()
-#hopDiffusion = HopDiffusion();
-plot(nanoDomain, SimulationType.NANODOMAIN)
+#nanoDomain = Nanodomain()
+hopDiffusion = HopDiffusion();
+plot(hopDiffusion, SimulationType.HOPDIFFUSION)

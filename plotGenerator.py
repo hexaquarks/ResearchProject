@@ -1,3 +1,4 @@
+from hopDiffusionSimulation import HopDiffusion
 from nanodomainSimulation import Nanodomain
 from simulation import *
 from util import *
@@ -30,9 +31,18 @@ def handle_nanodomain(ax, sim: Nanodomain):
     ]
     [ax.add_patch(nanodomain) for nanodomain in nanodomains]
 
-def handle_hop_diffusion(ax):
-    # TODO
-    pass
+def handle_hop_diffusion(ax, sim: HopDiffusion):
+    p = sim.rectangle_coordinates
+    print(p)
+    compartments = [
+        plt.Rectangle(
+            tuple((param[0], param[1])),
+            param[2], param[3],
+            color='black',
+            alpha=1.0)
+        for param in sim.rectangle_coordinates
+    ]
+    [ax.add_patch(boundary) for boundary in compartments]
 
 def get_coordinates_for_plot(sim, idx):
     return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
