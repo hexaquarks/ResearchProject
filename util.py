@@ -30,3 +30,17 @@ class Util:
     @staticmethod
     def get_random_normal_direction():
         return np.random.normal() * np.random.choice([1, -1])
+
+    @staticmethod
+    def is_point_within_bounds(pos: Tuple, bounds: Tuple[Tuple]):
+        x, y = pos[0], pos[1]
+        return x >= bounds[0][0] and x <= bounds[0][1] and y >=  bounds[1][0] and y <= bounds[1][1]
+    
+    @staticmethod
+    def sign(x):
+        return bool(x >= 0) - bool(x < 0)
+    
+    @staticmethod
+    def increment_tuple_by_val(tuple_object: Tuple, val):
+        tuple_object = tuple((tuple_object[0] + val[0], tuple_object[1] + val[1]))
+        return tuple_object

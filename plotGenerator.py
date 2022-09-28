@@ -1,3 +1,4 @@
+from hopDiffusionSimulation import HopDiffusion
 from nanodomainSimulation import Nanodomain
 from simulation import *
 from util import *
@@ -12,13 +13,6 @@ RADIUS = 250
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
 markers: List = ['o', 'v', '<', '>', 's', 'p']
 DPI = 100
-
-def get_nanodomain_attributes(sim: Nanodomain) -> List[Tuple]:
-    return list(map(
-        lambda coord, radius: (coord, radius), 
-        sim.get_nanodomain_coordinates, 
-        sim.get_nanodomain_radii
-    ))
                 
 def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
@@ -26,13 +20,20 @@ def handle_nanodomain(ax, sim: Nanodomain):
             *param,
             color='black', 
             alpha = 0.2) 
-        for param in get_nanodomain_attributes(sim)
+        for param in sim.get_nanodomain_attributes()
     ]
     [ax.add_patch(nanodomain) for nanodomain in nanodomains]
 
-def handle_hop_diffusion(ax):
-    # TODO
-    pass
+def handle_hop_diffusion(ax, sim: HopDiffusion):
+    compartments = [
+        plt.Rectangle(
+            tuple((param[0], param[1])),
+            param[2], param[3],
+            color='black',
+            alpha=0.7)
+        for param in sim.boundary_coordinates_for_plot
+    ]
+    [ax.add_patch(boundary) for boundary in compartments]
 
 def get_coordinates_for_plot(sim, idx):
     return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])

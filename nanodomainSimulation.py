@@ -25,6 +25,13 @@ class Nanodomain(Simulation):
     def get_nanodomain_radii(self) -> List[int]:
         return self.nanodomain_radii
     
+    def get_nanodomain_attributes(self) -> List[Tuple]:
+        return list(map(
+            lambda coord, radius: (coord, radius), 
+            self.get_nanodomain_coordinates, 
+            self.get_nanodomain_radii
+        ))
+    
     def is_particle_in_nanodomain(self, particle) -> bool:
         return any(
             Util.compute_distance(particle, circle_center) <= radius 
