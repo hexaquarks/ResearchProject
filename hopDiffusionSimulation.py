@@ -16,16 +16,18 @@ class HopDiffusion(Simulation):
         self.generate_rectangle_attributes()
         
     def generate_rectangle_attributes(self):
-        step: float = float(2 * RADIUS / 3)
-        for i in range(3):
-            width, height = THICKNESS, 2 * RADIUS
-            x = i * step - RADIUS - (THICKNESS >> 1)
-            y = -RADIUS 
-            self.rectangle_coordinates.append(list([x, y, width, height]))
-        for i in range(3):
-            width, height = 2 * RADIUS, THICKNESS
-            x = -RADIUS 
-            y = i * step - RADIUS - (THICKNESS >> 1)
+        number_of_boundaries = 3
+        step: float = float((RADIUS << 1) / number_of_boundaries)
+        
+        for i in range(6):
+            horizontal: bool = i < number_of_boundaries
+            curr = i * step if horizontal else (i - number_of_boundaries) * step
+            
+            width = THICKNESS if horizontal else RADIUS << 1
+            height = THICKNESS if not horizontal else RADIUS << 1
+            x = curr - RADIUS - (THICKNESS >> 1) if horizontal else -RADIUS
+            y = curr - RADIUS - (THICKNESS >> 1) if not horizontal else -RADIUS
+            
             self.rectangle_coordinates.append(list([x, y, width, height]))
     
     @property
