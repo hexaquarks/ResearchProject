@@ -8,7 +8,7 @@ from util import *
         
 class HopDiffusion(Simulation):
     global THICKNESS
-    THICKNESS = 10
+    THICKNESS = 6
     
     def __init__(self, n: int = 5):
         super().__init__(n)

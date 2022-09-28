@@ -32,7 +32,7 @@ def handle_hop_diffusion(ax, sim: HopDiffusion):
             tuple((param[0], param[1])),
             param[2], param[3],
             color='black',
-            alpha=1.0)
+            alpha=0.7)
         for param in sim.rectangle_coordinates
     ]
     [ax.add_patch(boundary) for boundary in compartments]
