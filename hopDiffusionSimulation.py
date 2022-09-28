@@ -13,10 +13,10 @@ class HopDiffusion(Simulation):
     NUMBER_OF_BOUNDARIES_PER_DIRECTION = 3
     
     def __init__(self, n: int = 5):
-        super().__init__(n)
         self.boundary_coordinates_for_plot: List[List] = []
         self.boundary_coordinates: List[Tuple[Tuple]] = []
         self.generate_boundaries()
+        super().__init__(n)
         
     def generate_boundaries(self):
         step: int = int((RADIUS << 1) / NUMBER_OF_BOUNDARIES_PER_DIRECTION)
@@ -37,13 +37,9 @@ class HopDiffusion(Simulation):
     def get_boundary_coordinates(self):
         return self.boundary_coordinates_for_plot
     
-    def is_particle_in_bounds_of_a_boundary(self, pos: Tuple, bound: Tuple[Tuple]):
-        x, y = pos[0], pos[1]
-        return x >= bound[0][0] and x <= bound[0][1] and y >=  bound[1][1] and y <= bound[1][1]
-    
     def is_particle_on_boundary(self, pos: Tuple):   
         return any(
-            self.is_particle_in_bounds_of_a_boundary(pos, bounds_of_boundary)
+            Util.is_point_within_bounds(pos, bounds_of_boundary)
             for bounds_of_boundary in self.boundary_coordinates
         ) 
     
@@ -68,7 +64,7 @@ class HopDiffusion(Simulation):
         
         def rec(self, x: int = 0, y: int = 0) -> Tuple[int]:
             x, y = [getRandomCanvasValue(self) for _ in range(2)]
-            while (x, y) in mem:
+            while (x, y) in mem or self.is_particle_on_boundary(tuple((x, y))):
                 return rec(self, x, y)
             mem.append((x, y))
             return x,y

@@ -25,7 +25,6 @@ class Nanodomain(Simulation):
     def get_nanodomain_radii(self) -> List[int]:
         return self.nanodomain_radii
     
-    
     def get_nanodomain_attributes(self) -> List[Tuple]:
         return list(map(
             lambda coord, radius: (coord, radius), 

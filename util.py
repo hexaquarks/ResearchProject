@@ -30,3 +30,8 @@ class Util:
     @staticmethod
     def get_random_normal_direction():
         return np.random.normal() * np.random.choice([1, -1])
+
+    @staticmethod
+    def is_point_within_bounds(pos: Tuple, bounds: Tuple[Tuple]):
+        x, y = pos[0], pos[1]
+        return x >= bounds[0][0] and x <= bounds[0][1] and y >=  bounds[1][1] and y <= bounds[1][1]
