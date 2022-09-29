@@ -3,7 +3,7 @@ from xmlrpc.client import Boolean, boolean
 import numpy as np
 import matplotlib.pyplot as plt
 
-from simulation import *
+from simulations.simulation import *
 from util import *
         
 class Nanodomain(Simulation):

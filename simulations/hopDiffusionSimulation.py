@@ -3,7 +3,7 @@ from xmlrpc.client import Boolean, boolean
 import numpy as np
 import matplotlib.pyplot as plt
 
-from simulation import *
+from simulations.simulation import *
 from util import *
         
 class HopDiffusion(Simulation):
@@ -61,8 +61,16 @@ class HopDiffusion(Simulation):
         surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(newPos)
         
         while (self.is_particle_on_specific_boudnary(newPos, surrounding_boundary_idx)):
-            newPos = Util.increment_tuple_by_val(newPos, tuple((Util.sign(x_dir), Util.sign(y_dir))))
-        newPos = Util.increment_tuple_by_val(newPos, tuple((Util.sign(x_dir) * BOUNDARY_JUMP, Util.sign(y_dir) * BOUNDARY_JUMP)))
+            newPos = Util.increment_tuple_by_val(
+                newPos, tuple((Util.sign(x_dir), Util.sign(y_dir)))
+            )
+            
+        newPos = Util.increment_tuple_by_val(
+            newPos, tuple(
+                (Util.sign(x_dir) * BOUNDARY_JUMP, 
+                 Util.sign(y_dir) * BOUNDARY_JUMP)
+            )
+        )
         
         return newPos
     

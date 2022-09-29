@@ -1,8 +1,9 @@
-from simulation import *
+from simulations.simulation import *
+from simulations.brownianSimulation import *
+from simulations.nanodomainSimulation import *    
+
 from plotGenerator import *
 from util import *
-from brownianSimulation import *
-from nanodomainSimulation import *    
 
 #brownian = Brownian()
 #nanoDomain = Nanodomain()

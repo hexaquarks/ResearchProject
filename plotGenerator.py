@@ -1,6 +1,6 @@
-from hopDiffusionSimulation import HopDiffusion
-from nanodomainSimulation import Nanodomain
-from simulation import *
+from simulations.hopDiffusionSimulation import HopDiffusion
+from simulations.nanodomainSimulation import Nanodomain
+from simulations.simulation import *
 from util import *
 
 from matplotlib.animation import FuncAnimation

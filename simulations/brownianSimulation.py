@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import numpy as np
 
-from simulation import *
+from simulations.simulation import *
 from util import *
 
 class Brownian(Simulation):
