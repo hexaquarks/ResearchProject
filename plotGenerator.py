@@ -8,6 +8,7 @@ from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
 from typing import List, Tuple
 import numpy as np
+from matplotlib import rcParams
 
 RADIUS = 250
 colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
@@ -18,7 +19,7 @@ def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
         plt.Circle(
             *param,
-            color='black', 
+            color = 'black', 
             alpha = 0.2) 
         for param in sim.get_nanodomain_attributes()
     ]
@@ -29,8 +30,9 @@ def handle_hop_diffusion(ax, sim: HopDiffusion):
         plt.Rectangle(
             tuple((param[0], param[1])),
             param[2], param[3],
-            color='black',
-            alpha=0.7)
+            color = 'black',
+            alpha = 0.7,
+            clip_on = False)
         for param in sim.boundary_coordinates_for_plot
     ]
     [ax.add_patch(boundary) for boundary in compartments]
@@ -42,10 +44,8 @@ def get_coordinates_for_heads(sim, idx):
     return Util.get_last_point(sim.paths[idx])
 
 def set_plot_parameters(ax):
-    ax.tick_params(axis='y',
-            direction="in",
-            right=True, labelsize=18)
-    ax.tick_params(axis='x', direction="in" , top=True,bottom=True, labelsize=18)
+    ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
+    ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
 
     ## legends and utilities
     ax.set_xlabel(r"nm", fontsize=16)
@@ -99,3 +99,5 @@ def plot(sim: Simulation, type: SimulationType):
 
     plt.show(block=True)
     fig.tight_layout()
+
+rcParams.update({'figure.autolayout': True})

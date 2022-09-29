@@ -8,11 +8,14 @@ from util import *
         
 class HopDiffusion(Simulation):
     global BOUNDARY_THICKNESS
-    global NUMBER_OF_BOUNDARIES_PER_DIRECTION
+    global NUMBER_OF_COMPARTMENTS_PER_DIRECTION
     global BOUNDARY_JUMP
-    BOUNDARY_THICKNESS = 6
-    NUMBER_OF_BOUNDARIES_PER_DIRECTION = 3
+    global BOUNDARY_OVERFLOW
+    
+    BOUNDARY_THICKNESS = 15
+    NUMBER_OF_COMPARTMENTS_PER_DIRECTION = 3
     BOUNDARY_JUMP = BOUNDARY_THICKNESS
+    BOUNDARY_OVERFLOW = 20
     
     def __init__(self, n: int = 5):
         self.boundary_coordinates_for_plot: List[List] = []
@@ -21,16 +24,17 @@ class HopDiffusion(Simulation):
         super().__init__(n)
         
     def generate_boundaries(self):
-        step: int = int((RADIUS << 1) / NUMBER_OF_BOUNDARIES_PER_DIRECTION)
+        step: int = int((RADIUS << 1) / NUMBER_OF_COMPARTMENTS_PER_DIRECTION)
         
         for i in range(6):
-            horizontal: bool = i < NUMBER_OF_BOUNDARIES_PER_DIRECTION
-            curr = i * step if horizontal else (i - NUMBER_OF_BOUNDARIES_PER_DIRECTION) * step
+            if i % 3 == 0: continue 
+            horizontal: bool = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
+            curr = i * step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * step
             
-            width = BOUNDARY_THICKNESS if horizontal else RADIUS << 1
-            height = BOUNDARY_THICKNESS if not horizontal else RADIUS << 1
-            x = curr - RADIUS - (BOUNDARY_THICKNESS >> 1) if horizontal else -RADIUS
-            y = curr - RADIUS - (BOUNDARY_THICKNESS >> 1) if not horizontal else -RADIUS
+            width = BOUNDARY_THICKNESS if horizontal else (RADIUS << 1) + (BOUNDARY_OVERFLOW << 1)
+            height = BOUNDARY_THICKNESS if not horizontal else (RADIUS << 1) + (BOUNDARY_OVERFLOW << 1)
+            x = curr - RADIUS - (BOUNDARY_THICKNESS >> 1) if horizontal else -RADIUS - BOUNDARY_OVERFLOW
+            y = curr - RADIUS - (BOUNDARY_THICKNESS >> 1) if not horizontal else -RADIUS - BOUNDARY_OVERFLOW
             
             self.boundary_coordinates_for_plot.append(list([x, y, width, height]))
             self.boundary_coordinates.append(list([tuple((x, x + width)), tuple((y, y + height))]))
