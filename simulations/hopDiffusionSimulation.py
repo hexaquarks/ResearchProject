@@ -64,7 +64,7 @@ class HopDiffusion(Simulation):
     def make_particle_jump(self, newPos: Tuple, x_dir: int, y_dir: int):
         surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(newPos)
         
-        while (self.is_particle_on_boundary(newPos)):
+        while (self.is_particle_on_specific_boudnary(newPos, surrounding_boundary_idx)):
             newPos = Util.increment_tuple_by_val(
                 newPos, tuple((Util.sign(x_dir), Util.sign(y_dir)))
             )
@@ -75,6 +75,14 @@ class HopDiffusion(Simulation):
                  Util.sign(y_dir) * BOUNDARY_JUMP)
             )
         )
+        # Special case: In some instances the jump may land the particle
+        # on a subsequent boundary so we repeat the function. We decrement
+        # the particle's coordinates until it is out.
+        new_surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(newPos)
+        while (self.is_particle_on_boundary(newPos)):
+            newPos = Util.increment_tuple_by_val(
+                newPos, tuple((Util.sign(-x_dir), Util.sign(-y_dir)))
+            )
         
         return newPos
     
