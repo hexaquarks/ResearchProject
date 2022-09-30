@@ -64,7 +64,7 @@ class HopDiffusion(Simulation):
     def make_particle_jump(self, newPos: Tuple, x_dir: int, y_dir: int):
         surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(newPos)
         
-        while (self.is_particle_on_specific_boudnary(newPos, surrounding_boundary_idx)):
+        while (self.is_particle_on_boundary(newPos)):
             newPos = Util.increment_tuple_by_val(
                 newPos, tuple((Util.sign(x_dir), Util.sign(y_dir)))
             )
