@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import List, Tuple
 from xmlrpc.client import Boolean, boolean
 import numpy as np
@@ -94,7 +95,7 @@ class HopDiffusion(Simulation):
     
     def update_path(self, idx):
         x, y = self.paths[idx][-1]
-        assert(not self.is_particle_on_boundary(tuple((x ,y))))
+        assert(not self.is_particle_on_boundary(tuple((x, y))))
         
         diffusion_factor = MEMBRANE_DIFFUSION_FATOR_CORRECTED
         x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
@@ -109,7 +110,7 @@ class HopDiffusion(Simulation):
         self.paths[idx].append(newPos)
         
     def update(self):
-        [self.update_path(i) for i in range(self.numberOfParticles)]
+        for i in range(self.numberOfParticles): self.update_path(i)
         
     def initializeParticles(self) -> None:
         mem: List[Tuple] = []
@@ -117,12 +118,13 @@ class HopDiffusion(Simulation):
         def getRandomCanvasValue(self) -> int:
             return int(random.randint(-(CORRECTED_CANVAS_RADIUS), CORRECTED_CANVAS_RADIUS))
         
+        #@lru_cache(maxsize = None)
         def rec(self, x: int = 0, y: int = 0) -> Tuple[int]:
             x, y = [getRandomCanvasValue(self) for _ in range(2)]
             while (x, y) in mem or self.is_particle_on_boundary(tuple((x, y))):
                 return rec(self, x, y)
             mem.append((x, y))
-            return x,y
+            return x, y
         
         self.particlesLocation.extend([rec(self) for _ in range(5)])
     

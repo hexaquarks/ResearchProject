@@ -38,6 +38,7 @@ class Util:
     
     @staticmethod
     def sign(x):
+        return (x >= 0) >> 1 - 1
         return bool(x >= 0) - bool(x < 0)
     
     @staticmethod
