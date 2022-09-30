@@ -44,3 +44,8 @@ class Util:
     def increment_tuple_by_val(tuple_object: Tuple, val):
         tuple_object = tuple((tuple_object[0] + val[0], tuple_object[1] + val[1]))
         return tuple_object
+    
+    @staticmethod
+    def change_direction(tuple_object: Tuple, dir):
+        tuple_object = tuple((tuple_object[0] - dir[0], tuple_object[1] - dir[1]))
+        return tuple_object

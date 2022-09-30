@@ -11,11 +11,13 @@ class HopDiffusion(Simulation):
     global NUMBER_OF_COMPARTMENTS_PER_DIRECTION
     global BOUNDARY_JUMP
     global BOUNDARY_OVERFLOW
+    global HOP_PROBABILITY_PERCENTAGE
     
     BOUNDARY_THICKNESS = 15
     NUMBER_OF_COMPARTMENTS_PER_DIRECTION = 3
     BOUNDARY_JUMP = BOUNDARY_THICKNESS
     BOUNDARY_OVERFLOW = 20
+    HOP_PROBABILITY_PERCENTAGE = 0.15
     
     def __init__(self, n: int = 5):
         self.boundary_coordinates_for_plot: List[List] = []
@@ -42,6 +44,10 @@ class HopDiffusion(Simulation):
     @property
     def get_boundary_coordinates(self):
         return self.boundary_coordinates_for_plot
+
+    def can_particle_hop_boundary_probability(self) -> bool:
+        return random.random() < HOP_PROBABILITY_PERCENTAGE
+
     
     def is_particle_on_specific_boudnary(self, pos: Tuple, idx: int):
         return Util.is_point_within_bounds(pos, self.boundary_coordinates[idx])
@@ -95,7 +101,10 @@ class HopDiffusion(Simulation):
         newPos = tuple((x + x_dir, y + y_dir))
         
         if self.is_particle_on_boundary(newPos):
-            newPos = self.make_particle_jump(newPos, x_dir, y_dir)
+            if self.can_particle_hop_boundary_probability():
+                newPos = self.make_particle_jump(newPos, x_dir, y_dir)
+            else:
+                newPos = Util.change_direction(tuple((x, y)), tuple((x_dir, y_dir)))
             
         self.paths[idx].append(newPos)
         
