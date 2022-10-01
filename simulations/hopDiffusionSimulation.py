@@ -1,30 +1,28 @@
-from functools import lru_cache
 from typing import List, Tuple
-from xmlrpc.client import Boolean, boolean
-import numpy as np
-import matplotlib.pyplot as plt
-
 from simulations.simulation import *
 from util import *
         
+BOUNDARY_THICKNESS: int
+NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int
+BOUNDARY_JUMP: int
+BOUNDARY_OVERFLOW: int
+HOP_PROBABILITY_PERCENTAGE: float
+
 class HopDiffusion(Simulation):
-    global BOUNDARY_THICKNESS
-    global NUMBER_OF_COMPARTMENTS_PER_DIRECTION
-    global BOUNDARY_JUMP
-    global BOUNDARY_OVERFLOW
-    global HOP_PROBABILITY_PERCENTAGE
-    
-    BOUNDARY_THICKNESS = 15
-    NUMBER_OF_COMPARTMENTS_PER_DIRECTION = 3
-    BOUNDARY_JUMP = BOUNDARY_THICKNESS
-    BOUNDARY_OVERFLOW = 20
-    HOP_PROBABILITY_PERCENTAGE = 0.15
-    
     def __init__(self, n: int = 5):
         self.boundary_coordinates_for_plot: List[List] = []
         self.boundary_coordinates: List[Tuple[Tuple]] = []
         self.generate_boundaries()
+        self.initialize_module_constants()
+        
         super().__init__(n)
+        
+    def initialize_module_constants(self):
+        BOUNDARY_THICKNESS = 15
+        NUMBER_OF_COMPARTMENTS_PER_DIRECTION = 3
+        BOUNDARY_JUMP = BOUNDARY_THICKNESS
+        BOUNDARY_OVERFLOW = 20
+        HOP_PROBABILITY_PERCENTAGE = 0.15
         
     def generate_boundaries(self):
         step: int = int((RADIUS << 1) / NUMBER_OF_COMPARTMENTS_PER_DIRECTION)
@@ -118,8 +116,7 @@ class HopDiffusion(Simulation):
         def getRandomCanvasValue(self) -> int:
             return int(random.randint(-(CORRECTED_CANVAS_RADIUS), CORRECTED_CANVAS_RADIUS))
         
-        #@lru_cache(maxsize = None)
-        def rec(self, x: int = 0, y: int = 0) -> Tuple[int]:
+        def rec(self, x: int = 0, y: int = 0) -> Tuple[int, int]:
             x, y = [getRandomCanvasValue(self) for _ in range(2)]
             while (x, y) in mem or self.is_particle_on_boundary(tuple((x, y))):
                 return rec(self, x, y)
