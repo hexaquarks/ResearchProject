@@ -42,5 +42,5 @@ class Nanodomain(Simulation):
         self.paths[idx].append((x + x_dir, y + y_dir))
         
     def update(self):
-        [self.update_path(i) for i in range(self.numberOfParticles)]
+        [self.update_path(i) for i in range(self.number_of_particles)]
     

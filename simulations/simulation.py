@@ -23,15 +23,15 @@ MEMBRANE_DIFFUSION_FATOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR * DIFFUSIO
 class Simulation:
     
     def __init__(self, n: int = 5):
-        self.numberOfParticles: int = n
-        self.particlesLocation: List[Tuple[int, int]] = [] 
+        self.number_of_particles: int = n
+        self.particles_location: List[Tuple[int, int]] = [] 
         self.paths: List[List[Tuple[int, int]]] = []
         
         self.init_particles()
         self.init_paths()
         
     def init_paths(self):
-        self.paths.extend([[coordinate] for coordinate in self.particlesLocation])
+        self.paths.extend([[coordinate] for coordinate in self.particles_location])
             
     def init_particles(self) -> None:
         mem: List[Tuple] = []
@@ -46,5 +46,5 @@ class Simulation:
             mem.append((x, y))
             return x,y
         
-        self.particlesLocation.extend([rec(self) for _ in range(5)])
+        self.particles_location.extend([rec(self) for _ in range(5)])
         

@@ -1,6 +1,7 @@
 from simulations.simulation import *
-from simulations.brownianSimulation import *
-from simulations.nanodomainSimulation import *    
+from simulations.brownian import *
+from simulations.nanodomain import *    
+from simulations.hopDiffusion import *    
 
 from plotGenerator import *
 from util import *

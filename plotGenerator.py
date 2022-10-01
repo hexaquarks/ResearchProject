@@ -1,5 +1,5 @@
-from simulations.hopDiffusionSimulation import HopDiffusion
-from simulations.nanodomainSimulation import Nanodomain
+from simulations.hopDiffusion import HopDiffusion
+from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
 from util import *
 

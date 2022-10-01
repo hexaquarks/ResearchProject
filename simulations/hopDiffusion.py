@@ -99,7 +99,7 @@ class HopDiffusion(Simulation):
         self.paths[idx].append(newPos)
         
     def update(self):
-        for i in range(self.numberOfParticles): self.update_path(i)
+        for i in range(self.number_of_particles): self.update_path(i)
         
     def init_particles(self) -> None:
         mem: List[Tuple[int, int]] = []
@@ -114,5 +114,5 @@ class HopDiffusion(Simulation):
             mem.append((x, y))
             return x, y
         
-        self.particlesLocation.extend([rec(self) for _ in range(5)])
+        self.particles_location.extend([rec(self) for _ in range(5)])
     
