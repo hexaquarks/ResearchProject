@@ -14,26 +14,28 @@ RADIUS_PADDING = 10
 RADIUS = 250
 CORRECTED_CANVAS_RADIUS = RADIUS - RADIUS_PADDING
 
+global MEMBRANE_DIFFUSION_COEFFICIENT
+global MEMBRANE_DIFFUSION_FATOR_CORRECTED
+global MEMBRANE_DIFFUSION_FACTOR
+global TIME_PER_FRAME
+global DIFFUSION_SPEED_CORRECTION
+
 class Simulation:
-    global MEMBRANE_DIFFUSION_COEFFICIENT
-    global MEMBRANE_DIFFUSION_FATOR_CORRECTED
-    global MEMBRANE_DIFFUSION_FACTOR
-    global TIME_PER_FRAME
-    global DIFFUSION_SPEED_CORRECTION
-    
-    TIME_PER_FRAME = 0.02 # 20 ms
-    DIFFUSION_SPEED_CORRECTION = 35 # arbitrary
-    MEMBRANE_DIFFUSION_COEFFICIENT = 0.1 # micrometer^2 / s
-    MEMBRANE_DIFFUSION_FACTOR = 2 * np.sqrt(MEMBRANE_DIFFUSION_COEFFICIENT * TIME_PER_FRAME)
-    MEMBRANE_DIFFUSION_FATOR_CORRECTED = MEMBRANE_DIFFUSION_FACTOR * DIFFUSION_SPEED_CORRECTION
-    
     def __init__(self, n: int = 5):
         self.numberOfParticles: int = n
-        self.particlesLocation: List[Tuple[int]] = [] 
-        self.paths: List[List[Tuple[int]]] = []
+        self.particlesLocation: List[Tuple[int, int]] = [] 
+        self.paths: List[List[Tuple[int, int]]] = []
         
+        self.initGlobalVariables()
         self.initializeParticles()
         self.initializePaths()
+        
+    def initGlobalVariables(self):
+        TIME_PER_FRAME = 0.02 # 20 ms
+        DIFFUSION_SPEED_CORRECTION = 35 # arbitrary
+        MEMBRANE_DIFFUSION_COEFFICIENT = 0.1 # micrometer^2 / s
+        MEMBRANE_DIFFUSION_FACTOR = 2 * np.sqrt(MEMBRANE_DIFFUSION_COEFFICIENT * TIME_PER_FRAME)
+        MEMBRANE_DIFFUSION_FATOR_CORRECTED = MEMBRANE_DIFFUSION_FACTOR * DIFFUSION_SPEED_CORRECTION
         
     def initializePaths(self):
         self.paths.extend([[coordinate] for coordinate in self.particlesLocation])
@@ -44,7 +46,7 @@ class Simulation:
         def getRandomCanvasValue(self) -> int:
             return int(random.randint(-(CORRECTED_CANVAS_RADIUS), CORRECTED_CANVAS_RADIUS))
         
-        def rec(self, x: int = 0, y: int = 0) -> Tuple[int]:
+        def rec(self, x: int = 0, y: int = 0) -> Tuple[int, int]:
             x, y = [getRandomCanvasValue(self) for _ in range(2)]
             while (x, y) in mem:
                 return rec(self, x, y)
