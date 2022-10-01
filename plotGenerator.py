@@ -3,21 +3,19 @@ from simulations.nanodomainSimulation import Nanodomain
 from simulations.simulation import *
 from util import *
 
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
 from typing import List, Tuple
 import numpy as np
-from matplotlib import rcParams
+from matplotlib import rcParams # type: ignore
 
-RADIUS = 250
-colors: List = ['r', 'b', "orange", 'g', 'y', 'c']
-markers: List = ['o', 'v', '<', '>', 's', 'p']
-DPI = 100
+colors: List[str] = ['r', 'b', "orange", 'g', 'y', 'c']
+markers: List[str] = ['o', 'v', '<', '>', 's', 'p']
                 
 def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
-        plt.Circle(
+        plt.Circle( # type: ignore
             *param,
             color = 'black', 
             alpha = 0.2) 
@@ -27,7 +25,7 @@ def handle_nanodomain(ax, sim: Nanodomain):
 
 def handle_hop_diffusion(ax, sim: HopDiffusion):
     compartments = [
-        plt.Rectangle(
+        plt.Rectangle( # type: ignore
             tuple((param[0], param[1])),
             param[2], param[3],
             color = 'black',
@@ -37,10 +35,10 @@ def handle_hop_diffusion(ax, sim: HopDiffusion):
     ]
     [ax.add_patch(boundary) for boundary in compartments]
 
-def get_coordinates_for_plot(sim, idx):
+def get_coordinates_for_plot(sim, idx: int):
     return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
 
-def get_coordinates_for_heads(sim, idx):
+def get_coordinates_for_heads(sim, idx: int):
     return Util.get_last_point(sim.paths[idx])
 
 def set_plot_parameters(ax):
@@ -59,7 +57,7 @@ def set_plot_parameters(ax):
     ax.set_ylim(-RADIUS, RADIUS)
     
 def plot(sim: Simulation, type: SimulationType):
-    fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI)
+    fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
 
     path_plots: List = [
         ax.plot(
@@ -97,7 +95,7 @@ def plot(sim: Simulation, type: SimulationType):
         interval = 20
     )
 
-    plt.show(block=True)
+    plt.show(block = True) # type: ignore
     fig.tight_layout()
 
 rcParams.update({'figure.autolayout': True})
