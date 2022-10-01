@@ -1,10 +1,10 @@
 from typing import List, Tuple
-from simulations.simulation import * 
+from simulations.simulation import *
 from util import *
         
+NANODOMAIN_DIFFUSION_FATOR_CORRECTED: float = MEMBRANE_DIFFUSION_FATOR_CORRECTED * 0.4 # type : ignore
+
 class Nanodomain(Simulation):
-    global NANODOMAIN_DIFFUSION_FATOR_CORRECTED 
-    NANODOMAIN_DIFFUSION_FATOR_CORRECTED = MEMBRANE_DIFFUSION_FATOR_CORRECTED * 0.4 # type : ignore
     
     def __init__(self, n: int = 5):
         super().__init__(n)

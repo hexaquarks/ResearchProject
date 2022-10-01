@@ -2,27 +2,19 @@ from typing import List, Tuple
 from simulations.simulation import *
 from util import *
         
-BOUNDARY_THICKNESS: int
-NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int
-BOUNDARY_JUMP: int
-BOUNDARY_OVERFLOW: int
-HOP_PROBABILITY_PERCENTAGE: float
+BOUNDARY_THICKNESS: int = 15
+NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
+BOUNDARY_JUMP: int  = BOUNDARY_THICKNESS
+BOUNDARY_OVERFLOW: int = 20
+HOP_PROBABILITY_PERCENTAGE: float = 0.15
 
 class HopDiffusion(Simulation):
     def __init__(self, n: int = 5):
         self.boundary_coordinates_for_plot: List[List] = []
         self.boundary_coordinates: List[Tuple[Tuple]] = []
         self.generate_boundaries()
-        self.initialize_module_constants()
         
         super().__init__(n)
-        
-    def initialize_module_constants(self):
-        BOUNDARY_THICKNESS = 15
-        NUMBER_OF_COMPARTMENTS_PER_DIRECTION = 3
-        BOUNDARY_JUMP = BOUNDARY_THICKNESS
-        BOUNDARY_OVERFLOW = 20
-        HOP_PROBABILITY_PERCENTAGE = 0.15
         
     def generate_boundaries(self):
         step: int = int((RADIUS << 1) / NUMBER_OF_COMPARTMENTS_PER_DIRECTION)
