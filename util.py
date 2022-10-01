@@ -4,11 +4,11 @@ import random
 
 class Util:
     @staticmethod
-    def get_bounds(lists) -> Tuple[int]:
-        x_min = min([min(elem[0]) for elem in lists])
-        x_max = max([max(elem[0]) for elem in lists])
-        y_min = min([min(elem[1]) for elem in lists])
-        y_max = max([max(elem[1]) for elem in lists])
+    def get_bounds(lists) -> Tuple[int, ...]:
+        x_min: int = min([min(elem[0]) for elem in lists])
+        x_max: int = max([max(elem[0]) for elem in lists])
+        y_min: int = min([min(elem[1]) for elem in lists])
+        y_max: int = max([max(elem[1]) for elem in lists])
         return x_min, x_max, y_min, y_max
 
     @staticmethod
@@ -16,7 +16,7 @@ class Util:
         return np.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
     @staticmethod
-    def get_last_point(path) -> Tuple[int]:
+    def get_last_point(path: List[Tuple]) -> Tuple[int, ...]:
         return path[-1][0], path[-1][1]
 
     @staticmethod
@@ -32,14 +32,13 @@ class Util:
         return np.random.normal() * np.random.choice([1, -1])
 
     @staticmethod
-    def is_point_within_bounds(pos: Tuple, bounds: Tuple[Tuple]):
+    def is_point_within_bounds(pos: Tuple, bounds: Tuple[Tuple, ...]):
         x, y = pos[0], pos[1]
         return x >= bounds[0][0] and x <= bounds[0][1] and y >=  bounds[1][0] and y <= bounds[1][1]
     
     @staticmethod
     def sign(x):
-        return (x >= 0) >> 1 - 1
-        return bool(x >= 0) - bool(x < 0)
+        return ((x >= 0) << 1) - 1
     
     @staticmethod
     def increment_tuple_by_val(tuple_object: Tuple, val):
