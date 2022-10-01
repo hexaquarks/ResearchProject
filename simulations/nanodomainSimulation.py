@@ -1,24 +1,20 @@
 from typing import List, Tuple
-from xmlrpc.client import Boolean, boolean
-import numpy as np
-import matplotlib.pyplot as plt
-
-from simulations.simulation import *
+from simulations.simulation import * 
 from util import *
         
 class Nanodomain(Simulation):
-    global NANODOMAIN_DIFFUSION_FATOR_CORRECTED
-    NANODOMAIN_DIFFUSION_FATOR_CORRECTED = MEMBRANE_DIFFUSION_FATOR_CORRECTED * 0.4
+    global NANODOMAIN_DIFFUSION_FATOR_CORRECTED 
+    NANODOMAIN_DIFFUSION_FATOR_CORRECTED = MEMBRANE_DIFFUSION_FATOR_CORRECTED * 0.4 # type : ignore
     
     def __init__(self, n: int = 5):
         super().__init__(n)
-        self.nanodomain_coordinates: List[Tuple[int]] = [ 
+        self.nanodomain_coordinates: List[Tuple[int, int]] = [ 
             (-100, 100), (0, 0), (150, -60), (-130, -160)
         ]
         self.nanodomain_radii: List[int] = [80, 20, 50, 140]
         
     @property
-    def get_nanodomain_coordinates(self) -> List[Tuple[int]]:
+    def get_nanodomain_coordinates(self) -> List[Tuple[int, int]]:
         return self.nanodomain_coordinates
     
     @property
@@ -32,7 +28,7 @@ class Nanodomain(Simulation):
             self.get_nanodomain_radii
         ))
     
-    def is_particle_in_nanodomain(self, particle) -> bool:
+    def is_particle_in_nanodomain(self, particle: Tuple) -> bool:
         return any(
             Util.compute_distance(particle, circle_center) <= radius 
             for circle_center, radius in 
