@@ -9,4 +9,5 @@ from util import *
 #brownian = Brownian()
 #nanoDomain = Nanodomain()
 hopDiffusion = HopDiffusion();
-plot(hopDiffusion, SimulationType.HOPDIFFUSION)
+plotGenerator = PlotGenerator(hopDiffusion, SimulationType.HOPDIFFUSION)
+plotGenerator.start_animation()

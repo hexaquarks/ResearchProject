@@ -41,61 +41,66 @@ def get_coordinates_for_plot(sim, idx: int):
 def get_coordinates_for_heads(sim, idx: int):
     return Util.get_last_point(sim.paths[idx])
 
-def set_plot_parameters(ax):
-    ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
-    ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
 
-    ## legends and utilities
-    ax.set_xlabel(r"nm", fontsize=16)
-    ax.set_ylabel(r"nm", fontsize=16)
+class PlotGenerator:
+    def __init__(self, sim: Simulation, type: SimulationType):
+        self.fig, self.ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
+        self.sim = sim
+        self.type = type
+        
+        self.path_plots: List = [
+            self.ax.plot(
+                *get_coordinates_for_plot(sim, i), 
+                markersize=15, color = colors[i])[0] 
+            for i in range(5)
+        ] 
+        
+        self.head_plots: List = [
+            self.ax.plot(
+                *get_coordinates_for_heads(sim, i), 
+                markersize=7, color = colors[i], marker = markers[i], 
+                markerfacecolor="white")[0] 
+            for i in range(5)
+        ]
+        
+    def set_plot_parameters(self):
+        self.ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
+        self.ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
 
-    ## border colors
-    ax.patch.set_edgecolor('black')  
-    ax.patch.set_linewidth('2') 
+        ## legends and utilities
+        self.ax.set_xlabel(r"nm", fontsize=16)
+        self.ax.set_ylabel(r"nm", fontsize=16)
 
-    ax.set_xlim(-RADIUS, RADIUS)
-    ax.set_ylim(-RADIUS, RADIUS)
-    
-def plot(sim: Simulation, type: SimulationType):
-    fig, ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
+        ## border colors
+        self.ax.patch.set_edgecolor('black')  
+        self.ax.patch.set_linewidth('2') 
 
-    path_plots: List = [
-        ax.plot(
-            *get_coordinates_for_plot(sim, i), 
-            markersize=15, color = colors[i])[0] 
-        for i in range(5)
-    ] 
-    
-    head_plots: List = [
-        ax.plot(
-            *get_coordinates_for_heads(sim, i), 
-            markersize=7, color = colors[i], marker = markers[i], 
-            markerfacecolor="white")[0] 
-        for i in range(5)
-    ]
+        self.ax.set_xlim(-RADIUS, RADIUS)
+        self.ax.set_ylim(-RADIUS, RADIUS)
+        
+    def initialize_animation(self):
+        self.set_plot_parameters()
+        if self.type == SimulationType.NANODOMAIN: handle_nanodomain(self.ax, self.sim)
+        elif self.type == SimulationType.HOPDIFFUSION: handle_hop_diffusion(self.ax, self.sim)
+        return self.path_plots
 
-    def initialize_animation():
-        set_plot_parameters(ax)
-        if type == SimulationType.NANODOMAIN: handle_nanodomain(ax, sim)
-        elif type == SimulationType.HOPDIFFUSION: handle_hop_diffusion(ax, sim)
-        return path_plots
+    def update_animation(self, *args):
+        self.sim.update()
+        for i, plot in enumerate(self.path_plots):
+            plot.set_data(*get_coordinates_for_plot(self.sim, i))
+        for i, head_marker in enumerate(self.head_plots):
+            head_marker.set_data(*get_coordinates_for_heads(self.sim, i))
+        return self.path_plots
 
-    def update_animation(frame):
-        sim.update()
-        for i, plot in enumerate(path_plots):
-            plot.set_data(*get_coordinates_for_plot(sim, i))
-        for i, head_marker in enumerate(head_plots):
-            head_marker.set_data(*get_coordinates_for_heads(sim, i))
-        return path_plots
+    def start_animation(self):
+        self.animation = FuncAnimation(
+            fig = self.fig,
+            func = self.update_animation, 
+            init_func = self.initialize_animation, 
+            interval = 20
+        )
+        plt.show(block = True) # type: ignore
+        self.fig.tight_layout()
 
-    animation = FuncAnimation(
-        fig, 
-        update_animation, 
-        init_func = initialize_animation, 
-        interval = 20
-    )
-
-    plt.show(block = True) # type: ignore
-    fig.tight_layout()
 
 rcParams.update({'figure.autolayout': True})
