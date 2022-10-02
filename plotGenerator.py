@@ -6,11 +6,12 @@ from util import *
 from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
+
 import numpy as np
 from matplotlib import rcParams # type: ignore
 
-colors: list[str] = ['r', 'b', "orange", 'g', 'y', 'c']
-markers: list[str] = ['o', 'v', '<', '>', 's', 'p']
+colors: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
+markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
                 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -47,14 +48,14 @@ class PlotGenerator:
         self.sim = sim
         self.type = type
         
-        self.path_plots: list[plt.Line2D] = [
+        self.path_plots = [
             self.ax.plot(
                 *get_coordinates_for_plot(sim, i), 
                 markersize=15, color = colors[i])[0] 
             for i in range(5)
         ] 
         
-        self.head_plots: list[plt.Line2D] = [
+        self.head_plots = [
             self.ax.plot(
                 *get_coordinates_for_heads(sim, i), 
                 markersize=7, color = colors[i], marker = markers[i], 
@@ -72,12 +73,12 @@ class PlotGenerator:
 
         ## border colors
         self.ax.patch.set_edgecolor('black')  
-        self.ax.patch.set_linewidth('2') 
+        self.ax.patch.set_linewidth(2) 
 
         self.ax.set_xlim(-RADIUS, RADIUS)
         self.ax.set_ylim(-RADIUS, RADIUS)
         
-    def initialize_animation(self) -> list[plt.Artist]:
+    def initialize_animation(self):
         self.set_plot_parameters()
         if isinstance(self.sim, Nanodomain): handle_nanodomain(self.ax, self.sim)
         elif isinstance(self.sim, HopDiffusion): handle_hop_diffusion(self.ax, self.sim)
@@ -86,12 +87,15 @@ class PlotGenerator:
     def update_animation(self, *args):
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
-            axes.set_data(*get_coordinates_for_plot(self.sim, i))
+            coords = get_coordinates_for_plot(self.sim, i)
+            axes.set_data(*coords)
         for i, head_marker in enumerate(self.head_plots):
-            head_marker.set_data(*get_coordinates_for_heads(self.sim, i))
+            coords = get_coordinates_for_heads(self.sim, i)
+            head_marker.set_data(*coords)
         return self.path_plots
 
     def start_animation(self):
+        plt.plot(list([1,2]), list([3,4]))
         self.animation = FuncAnimation(
             fig = self.fig,
             func = self.update_animation, 
