@@ -6,12 +6,11 @@ from util import *
 from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
-from typing import List, Tuple
 import numpy as np
 from matplotlib import rcParams # type: ignore
 
-colors: List[str] = ['r', 'b', "orange", 'g', 'y', 'c']
-markers: List[str] = ['o', 'v', '<', '>', 's', 'p']
+colors: list[str] = ['r', 'b', "orange", 'g', 'y', 'c']
+markers: list[str] = ['o', 'v', '<', '>', 's', 'p']
                 
 def handle_nanodomain(ax, sim: Nanodomain):
     nanodomains = [
@@ -41,21 +40,20 @@ def get_coordinates_for_plot(sim, idx: int):
 def get_coordinates_for_heads(sim, idx: int):
     return Util.get_last_point(sim.paths[idx])
 
-
 class PlotGenerator:
     def __init__(self, sim: Simulation, type: SimulationType):
         self.fig, self.ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
         self.sim = sim
         self.type = type
         
-        self.path_plots: List = [
+        self.path_plots: list = [
             self.ax.plot(
                 *get_coordinates_for_plot(sim, i), 
                 markersize=15, color = colors[i])[0] 
             for i in range(5)
         ] 
         
-        self.head_plots: List = [
+        self.head_plots: list = [
             self.ax.plot(
                 *get_coordinates_for_heads(sim, i), 
                 markersize=7, color = colors[i], marker = markers[i], 

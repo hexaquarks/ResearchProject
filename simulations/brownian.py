@@ -1,4 +1,3 @@
-from typing import List, Tuple
 from simulations.simulation import *
 from util import *
 
@@ -9,7 +8,7 @@ class Brownian(Simulation):
         
     def update_path(self, idx: int):
         x_dir, y_dir = [
-            Util.get_random_normal_direction() * MEMBRANE_DIFFUSION_FATOR_CORRECTED for _ in range(2)]
+            Util.get_random_normal_direction() * MEMBRANE_DIFFUSION_FACTOR_CORRECTED for _ in range(2)]
         x, y = self.paths[idx][-1]
         self.paths[idx].append((x + x_dir, y + y_dir))
         

@@ -1,4 +1,3 @@
-from typing import List, Tuple
 from simulations.simulation import *
 from util import *
         
@@ -8,27 +7,27 @@ class Nanodomain(Simulation):
     
     def __init__(self, n: int = 5):
         super().__init__(n)
-        self.nanodomain_coordinates: List[Tuple[int, int]] = [ 
+        self.nanodomain_coordinates: list[tuple[int, int]] = [ 
             (-100, 100), (0, 0), (150, -60), (-130, -160)
         ]
-        self.nanodomain_radii: List[int] = [80, 20, 50, 140]
+        self.nanodomain_radii: list[int] = [80, 20, 50, 140]
         
     @property
-    def get_nanodomain_coordinates(self) -> List[Tuple[int, int]]:
+    def get_nanodomain_coordinates(self) -> list[tuple[int, int]]:
         return self.nanodomain_coordinates
     
     @property
-    def get_nanodomain_radii(self) -> List[int]:
+    def get_nanodomain_radii(self) -> list[int]:
         return self.nanodomain_radii
     
-    def get_nanodomain_attributes(self) -> List[Tuple]:
+    def get_nanodomain_attributes(self) -> list[tuple]:
         return list(map(
             lambda coord, radius: (coord, radius), 
             self.get_nanodomain_coordinates, 
             self.get_nanodomain_radii
         ))
     
-    def is_particle_in_nanodomain(self, particle: Tuple) -> bool:
+    def is_particle_in_nanodomain(self, particle: tuple) -> bool:
         return any(
             Util.compute_distance(particle, circle_center) <= radius 
             for circle_center, radius in 

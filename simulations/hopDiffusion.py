@@ -1,4 +1,3 @@
-from typing import List, Tuple
 from simulations.simulation import *
 from util import *
         
@@ -10,8 +9,8 @@ HOP_PROBABILITY_PERCENTAGE: float = 0.15
 
 class HopDiffusion(Simulation):
     def __init__(self, n: int = 5):
-        self.boundary_coordinates_for_plot: List[List] = []
-        self.boundary_coordinates: List[Tuple[Tuple]] = []
+        self.boundary_coordinates_for_plot: list[list] = []
+        self.boundary_coordinates: list[tuple[tuple]] = []
         self.generate_boundaries()
         
         super().__init__(n)
@@ -39,10 +38,10 @@ class HopDiffusion(Simulation):
     def can_particle_hop_boundary_probability(self) -> bool:
         return random.random() < HOP_PROBABILITY_PERCENTAGE
 
-    def is_particle_on_specific_boudnary(self, pos: Tuple, idx: int):
+    def is_particle_on_specific_boudnary(self, pos: tuple, idx: int):
         return Util.is_point_within_bounds(pos, self.boundary_coordinates[idx])
     
-    def is_particle_on_boundary(self, pos: Tuple):   
+    def is_particle_on_boundary(self, pos: tuple):   
         return any(
             Util.is_point_within_bounds(pos, bounds_of_boundary)
             for bounds_of_boundary in self.boundary_coordinates
@@ -51,13 +50,13 @@ class HopDiffusion(Simulation):
     def is_particle_in_compartment(self, particle) -> bool:
         return not self.is_particle_on_boundary(particle)
     
-    def get_surrounding_boundary_of_particle(self, pos: Tuple) -> int:
+    def get_surrounding_boundary_of_particle(self, pos: tuple) -> int:
         for idx, bounds_of_boundary in enumerate(self.boundary_coordinates):
             if Util.is_point_within_bounds(pos, bounds_of_boundary):
                 return idx
         return -1
     
-    def make_particle_jump(self, newPos: Tuple, x_dir: int, y_dir: int):
+    def make_particle_jump(self, newPos: tuple, x_dir: int, y_dir: int):
         surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(newPos)
         
         while (self.is_particle_on_specific_boudnary(newPos, surrounding_boundary_idx)):
@@ -102,12 +101,12 @@ class HopDiffusion(Simulation):
         for i in range(self.number_of_particles): self.update_path(i)
         
     def init_particles(self) -> None:
-        mem: List[Tuple[int, int]] = []
+        mem: list[tuple[int, int]] = []
         
         def get_random_canvas_value(self) -> int:
             return int(random.randint(-(CORRECTED_CANVAS_RADIUS), CORRECTED_CANVAS_RADIUS))
         
-        def rec(self, x: int = 0, y: int = 0) -> Tuple[int, int]:
+        def rec(self, x: int = 0, y: int = 0) -> tuple[int, int]:
             x, y = [get_random_canvas_value(self) for _ in range(2)]
             while (x, y) in mem or self.is_particle_on_boundary(tuple((x, y))):
                 return rec(self, x, y)

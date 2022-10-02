@@ -1,4 +1,3 @@
-from typing import List, Tuple
 import random
 import numpy as np
 from enum import Enum
@@ -8,7 +7,7 @@ class SimulationType(Enum):
      NANODOMAIN = 2
      HOPDIFFUSION = 3     
 
-PATH = Tuple[List[float]]
+PATH = tuple[list[float]]
 DPI = 100
 RADIUS_PADDING = 10
 RADIUS = 250
@@ -24,8 +23,8 @@ class Simulation:
     
     def __init__(self, n: int = 5):
         self.number_of_particles: int = n
-        self.particles_location: List[Tuple[int, int]] = [] 
-        self.paths: List[List[Tuple[int, int]]] = []
+        self.particles_location: list[tuple[int, int]] = [] 
+        self.paths: list[list[tuple[int, int]]] = []
         
         self.init_particles()
         self.init_paths()
@@ -34,12 +33,12 @@ class Simulation:
         self.paths.extend([[coordinate] for coordinate in self.particles_location])
             
     def init_particles(self) -> None:
-        mem: List[Tuple] = []
+        mem: list[tuple] = []
         
         def get_random_canvas_value(self) -> int:
             return int(random.randint(-(CORRECTED_CANVAS_RADIUS), CORRECTED_CANVAS_RADIUS))
         
-        def rec(self, x: int = 0, y: int = 0) -> Tuple[int, int]:
+        def rec(self, x: int = 0, y: int = 0) -> tuple[int, int]:
             x, y = [get_random_canvas_value(self) for _ in range(2)]
             while (x, y) in mem:
                 return rec(self, x, y)
