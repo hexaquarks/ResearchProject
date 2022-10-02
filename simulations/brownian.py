@@ -2,7 +2,6 @@ from simulations.simulation import *
 from util import *
 
 class Brownian(Simulation):
-    
     def __init__(self, n: int = 5):
         super().__init__(n)
         
@@ -12,6 +11,7 @@ class Brownian(Simulation):
         x, y = self.paths[idx][-1]
         self.paths[idx].append((x + x_dir, y + y_dir))
         
-    def update(self):
-        [self.update_path(i) for i in range(self.numberOfParticles)]
+    def update(self) -> None:
+        for i in range(self.n_particles):
+            self.update_path(i)
 
