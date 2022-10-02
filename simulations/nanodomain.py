@@ -2,7 +2,7 @@ from typing import List, Tuple
 from simulations.simulation import *
 from util import *
         
-NANODOMAIN_DIFFUSION_FATOR_CORRECTED: float = MEMBRANE_DIFFUSION_FATOR_CORRECTED * 0.4 # type : ignore
+NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECTED * 0.4 # type : ignore
 
 class Nanodomain(Simulation):
     
@@ -37,7 +37,7 @@ class Nanodomain(Simulation):
     
     def update_path(self, idx):
         x, y = self.paths[idx][-1]
-        diffusion_factor = NANODOMAIN_DIFFUSION_FATOR_CORRECTED if (self.is_particle_in_nanodomain((x, y))) else MEMBRANE_DIFFUSION_FATOR_CORRECTED
+        diffusion_factor = NANODOMAIN_DIFFUSION_FACTOR_CORRECTED if (self.is_particle_in_nanodomain((x, y))) else MEMBRANE_DIFFUSION_FACTOR_CORRECTED
         x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         self.paths[idx].append((x + x_dir, y + y_dir))
         

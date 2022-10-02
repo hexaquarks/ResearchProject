@@ -86,7 +86,7 @@ class HopDiffusion(Simulation):
         x, y = self.paths[idx][-1]
         assert(not self.is_particle_on_boundary(tuple((x, y))))
         
-        diffusion_factor = MEMBRANE_DIFFUSION_FATOR_CORRECTED
+        diffusion_factor = MEMBRANE_DIFFUSION_FACTOR_CORRECTED
         x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         newPos = tuple((x + x_dir, y + y_dir))
         
