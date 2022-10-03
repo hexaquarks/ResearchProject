@@ -6,41 +6,41 @@ from util import *
 from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
-from typing import List, Tuple
+
 import numpy as np
 from matplotlib import rcParams # type: ignore
 
-colors: List[str] = ['r', 'b', "orange", 'g', 'y', 'c']
-markers: List[str] = ['o', 'v', '<', '>', 's', 'p']
+colors: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
+markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
                 
-def handle_nanodomain(ax, sim: Nanodomain):
+def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
-        plt.Circle( # type: ignore
+        plt.Circle(
             *param,
-            color = 'black', 
-            alpha = 0.2) 
+            color='black',
+            alpha=0.2,
+        )
         for param in sim.get_nanodomain_attributes()
     ]
-    [ax.add_patch(nanodomain) for nanodomain in nanodomains]
+    for nanodomain in nanodomains:
+        ax.add_patch(nanodomain)
 
-def handle_hop_diffusion(ax, sim: HopDiffusion):
-    compartments = [
-        plt.Rectangle( # type: ignore
+def handle_hop_diffusion(ax: plt.Axes, sim: HopDiffusion) -> None:
+    for param in sim.boundary_coordinates_for_plot:
+        boundary = plt.Rectangle(
             tuple((param[0], param[1])),
             param[2], param[3],
-            color = 'black',
-            alpha = 0.7,
-            clip_on = False)
-        for param in sim.boundary_coordinates_for_plot
-    ]
-    [ax.add_patch(boundary) for boundary in compartments]
+            color='black',
+            alpha=0.7,
+            clip_on=False,
+        )
+        ax.add_patch(boundary)
 
-def get_coordinates_for_plot(sim, idx: int):
+def get_coordinates_for_plot(sim: Simulation, idx: int):
     return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
 
 def get_coordinates_for_heads(sim, idx: int):
     return Util.get_last_point(sim.paths[idx])
-
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, type: SimulationType):
@@ -48,14 +48,14 @@ class PlotGenerator:
         self.sim = sim
         self.type = type
         
-        self.path_plots: List = [
+        self.path_plots = [
             self.ax.plot(
                 *get_coordinates_for_plot(sim, i), 
                 markersize=15, color = colors[i])[0] 
             for i in range(5)
         ] 
         
-        self.head_plots: List = [
+        self.head_plots = [
             self.ax.plot(
                 *get_coordinates_for_heads(sim, i), 
                 markersize=7, color = colors[i], marker = markers[i], 
@@ -73,26 +73,29 @@ class PlotGenerator:
 
         ## border colors
         self.ax.patch.set_edgecolor('black')  
-        self.ax.patch.set_linewidth('2') 
+        self.ax.patch.set_linewidth(2) 
 
         self.ax.set_xlim(-RADIUS, RADIUS)
         self.ax.set_ylim(-RADIUS, RADIUS)
         
     def initialize_animation(self):
         self.set_plot_parameters()
-        if self.type == SimulationType.NANODOMAIN: handle_nanodomain(self.ax, self.sim)
-        elif self.type == SimulationType.HOPDIFFUSION: handle_hop_diffusion(self.ax, self.sim)
+        if isinstance(self.sim, Nanodomain): handle_nanodomain(self.ax, self.sim)
+        elif isinstance(self.sim, HopDiffusion): handle_hop_diffusion(self.ax, self.sim)
         return self.path_plots
 
     def update_animation(self, *args):
         self.sim.update()
-        for i, plot in enumerate(self.path_plots):
-            plot.set_data(*get_coordinates_for_plot(self.sim, i))
+        for i, axes in enumerate(self.path_plots):
+            coords = get_coordinates_for_plot(self.sim, i)
+            axes.set_data(*coords)
         for i, head_marker in enumerate(self.head_plots):
-            head_marker.set_data(*get_coordinates_for_heads(self.sim, i))
+            coords = get_coordinates_for_heads(self.sim, i)
+            head_marker.set_data(*coords)
         return self.path_plots
 
     def start_animation(self):
+        plt.plot(list([1,2]), list([3,4]))
         self.animation = FuncAnimation(
             fig = self.fig,
             func = self.update_animation, 
@@ -101,6 +104,3 @@ class PlotGenerator:
         )
         plt.show(block = True) # type: ignore
         self.fig.tight_layout()
-
-
-rcParams.update({'figure.autolayout': True})
