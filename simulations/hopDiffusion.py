@@ -1,10 +1,10 @@
 from simulations.simulation import *
 from util import *
         
-BOUNDARY_THICKNESS: int = 15
+BOUNDARY_THICKNESS: int = 45
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
 BOUNDARY_JUMP: int  = BOUNDARY_THICKNESS
-BOUNDARY_OVERFLOW: int = 20
+BOUNDARY_OVERFLOW: int = 60
 HOP_PROBABILITY_PERCENTAGE: float = 0.15
 
 class HopDiffusion(Simulation):

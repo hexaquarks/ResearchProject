@@ -9,7 +9,7 @@ from util import *
 def main() -> None:
     rcParams.update({'figure.autolayout': True})
     # brownian = Brownian()
-    # nanoDomain = Nanodomain()
+    #nanoDomain = Nanodomain()
     
     hopDiffusion = HopDiffusion();
     plotGenerator = PlotGenerator(hopDiffusion, SimulationType.HOPDIFFUSION)
