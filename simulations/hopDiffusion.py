@@ -19,8 +19,7 @@ class HopDiffusion(Simulation):
         step = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
 
         for i in range(6):
-            if i % 3 == 0:
-                continue
+            if i % 3 == 0: continue
             horizontal = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
             curr = i * step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * step
 
