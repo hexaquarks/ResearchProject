@@ -10,10 +10,10 @@ HOP_PROBABILITY_PERCENTAGE: float = 0.15
 
 class HopDiffusion(Simulation):
     def __init__(self, n: int = 5) -> None:
-        super().__init__(n)
         self.boundary_coordinates_for_plot: list[tuple[int, int, int, int]] = []
         self.boundary_coordinates: list[tuple[tuple[float, float], tuple[float, float]]] = []
         self.generate_boundaries()
+        super().__init__(n)
 
     def generate_boundaries(self) -> None:
         step = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
