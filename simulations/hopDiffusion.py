@@ -76,7 +76,7 @@ class HopDiffusion(Simulation):
         # on a subsequent boundary so we repeat the function. We decrement
         # the particle's coordinates until it is out.
         while self.is_particle_on_boundary(new_pos):
-            new_pos = Util.increment_tuple_by_val(
+            new_pos = util.increment_tuple_by_val(
                 new_pos, (np.sign(-x_dir), np.sign(-y_dir))
             )
 
@@ -87,7 +87,7 @@ class HopDiffusion(Simulation):
         assert not self.is_particle_on_boundary((x, y))
 
         diffusion_factor = MEMBRANE_DIFFUSION_FACTOR_CORRECTED
-        x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
+        x_dir, y_dir = [util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         new_pos = x + x_dir, y + y_dir
 
         if self.is_particle_on_boundary(new_pos):
