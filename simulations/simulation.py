@@ -2,10 +2,12 @@ import random
 import numpy as np
 from enum import Enum
 
+
 class SimulationType(Enum):
      BROWNIAN = 1
      NANODOMAIN = 2
-     HOPDIFFUSION = 3     
+     HOPDIFFUSION = 3
+
 
 DPI = 100
 RADIUS_PADDING = 20
@@ -17,6 +19,7 @@ DIFFUSION_SPEED_CORRECTION: int = 100 # arbitrary
 MEMBRANE_DIFFUSION_COEFFICIENT: float = 0.1 # micrometer^2 / s
 MEMBRANE_DIFFUSION_FACTOR: float = 2 * np.sqrt(MEMBRANE_DIFFUSION_COEFFICIENT * TIME_PER_FRAME)
 MEMBRANE_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR * DIFFUSION_SPEED_CORRECTION
+
 
 class Simulation:
     def __init__(self, n: int = 5) -> None:
@@ -36,8 +39,7 @@ class Simulation:
         for _ in range(5):
             while True:
                 pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
-                if pair not in mem:
-                    break
+                if pair not in mem: break
             mem.add(pair)
 
         return mem

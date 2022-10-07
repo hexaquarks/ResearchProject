@@ -1,27 +1,26 @@
 from simulations.simulation import *
-from util import *
-        
+import util
+
 BOUNDARY_THICKNESS: int = 45
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
-BOUNDARY_JUMP: int  = BOUNDARY_THICKNESS
+BOUNDARY_JUMP: int = BOUNDARY_THICKNESS
 BOUNDARY_OVERFLOW: int = 60
 HOP_PROBABILITY_PERCENTAGE: float = 0.15
+
 
 class HopDiffusion(Simulation):
     def __init__(self, n: int = 5) -> None:
         self.boundary_coordinates_for_plot: list[tuple[int, int, int, int]] = []
         self.boundary_coordinates: list[tuple[tuple[float, float], tuple[float, float]]] = []
         self.generate_boundaries()
-
         super().__init__(n)
 
     def generate_boundaries(self) -> None:
-        step: int = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
+        step = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
 
         for i in range(6):
-            if i % 3 == 0:
-                continue
-            horizontal: bool = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
+            if i % 3 == 0: continue
+            horizontal = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
             curr = i * step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * step
 
             width = BOUNDARY_THICKNESS if horizontal else (RADIUS * 2) + (BOUNDARY_OVERFLOW * 2)
@@ -30,20 +29,18 @@ class HopDiffusion(Simulation):
             y = curr - RADIUS - (BOUNDARY_THICKNESS // 2) if not horizontal else -RADIUS - BOUNDARY_OVERFLOW
 
             self.boundary_coordinates_for_plot.append((x, y, width, height))
-            self.boundary_coordinates.append(
-                ((x, x + width), (y, y + height))
-            )
+            self.boundary_coordinates.append(((x, x + width), (y, y + height)))
 
     @staticmethod
     def can_particle_hop_boundary_probability() -> bool:
         return random.random() < HOP_PROBABILITY_PERCENTAGE
 
     def is_particle_on_specific_boundary(self, pos: tuple[float, float], idx: int) -> bool:
-        return Util.is_point_within_bounds(pos, self.boundary_coordinates[idx])
+        return util.is_point_within_bounds(pos, self.boundary_coordinates[idx])
 
     def is_particle_on_boundary(self, pos: tuple[float, float]) -> bool:
         return any(
-            Util.is_point_within_bounds(pos, bounds_of_boundary)
+            util.is_point_within_bounds(pos, bounds_of_boundary)
             for bounds_of_boundary in self.boundary_coordinates
         )
 
@@ -52,7 +49,7 @@ class HopDiffusion(Simulation):
 
     def get_surrounding_boundary_of_particle(self, pos: tuple[float, float]) -> int:
         for idx, bounds_of_boundary in enumerate(self.boundary_coordinates):
-            if Util.is_point_within_bounds(pos, bounds_of_boundary):
+            if util.is_point_within_bounds(pos, bounds_of_boundary):
                 return idx
         return -1
 
@@ -64,22 +61,22 @@ class HopDiffusion(Simulation):
         surrounding_boundary_idx = self.get_surrounding_boundary_of_particle(new_pos)
 
         while self.is_particle_on_specific_boundary(new_pos, surrounding_boundary_idx):
-            new_pos = Util.increment_tuple_by_val(
+            new_pos = util.increment_tuple_by_val(
                 new_pos, (np.sign(x_dir), np.sign(y_dir))
             )
 
-        new_pos = Util.increment_tuple_by_val(
+        new_pos = util.increment_tuple_by_val(
             new_pos, (
                 np.sign(x_dir) * BOUNDARY_JUMP,
                 np.sign(y_dir) * BOUNDARY_JUMP,
-            ),
+            )
         )
 
         # Special case: In some instances the jump may land the particle
         # on a subsequent boundary so we repeat the function. We decrement
         # the particle's coordinates until it is out.
         while self.is_particle_on_boundary(new_pos):
-            new_pos = Util.increment_tuple_by_val(
+            new_pos = util.increment_tuple_by_val(
                 new_pos, (np.sign(-x_dir), np.sign(-y_dir))
             )
 
@@ -90,14 +87,14 @@ class HopDiffusion(Simulation):
         assert not self.is_particle_on_boundary((x, y))
 
         diffusion_factor = MEMBRANE_DIFFUSION_FACTOR_CORRECTED
-        x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
+        x_dir, y_dir = [util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         new_pos = x + x_dir, y + y_dir
 
         if self.is_particle_on_boundary(new_pos):
             if self.can_particle_hop_boundary_probability():
                 new_pos = self.make_particle_jump(new_pos, x_dir, y_dir)
             else:
-                new_pos = Util.change_direction((x, y), (x_dir, y_dir))
+                new_pos = util.change_direction((x, y), (x_dir, y_dir))
 
         self.paths[idx].append(new_pos)
 

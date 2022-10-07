@@ -1,7 +1,8 @@
 from simulations.simulation import *
-from util import *
-        
+import util
+
 NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECTED * 0.4 # type : ignore
+
 
 class Nanodomain(Simulation):
     def __init__(self, n: int = 5):
@@ -15,21 +16,23 @@ class Nanodomain(Simulation):
         return list(map(
             lambda coord, radius: (coord, radius),
             self.nanodomain_coordinates,
-            self.nanodomain_radii,
+            self.nanodomain_radii
         ))
 
     def is_particle_in_nanodomain(self, particle: tuple) -> bool:
         return any(
-            Util.compute_distance(particle, circle_center) <= radius
-            for circle_center, radius in
-            zip(self.nanodomain_coordinates, self.nanodomain_radii)
+            util.compute_distance(particle, circle_center) <= radius
+            for circle_center, radius in zip(self.nanodomain_coordinates, self.nanodomain_radii)
         )
 
     def update_path(self, idx: int) -> None:
         x, y = self.paths[idx][-1]
-        diffusion_factor = NANODOMAIN_DIFFUSION_FACTOR_CORRECTED if (
-            self.is_particle_in_nanodomain((x, y))) else MEMBRANE_DIFFUSION_FACTOR_CORRECTED
-        x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
+        diffusion_factor = (
+            NANODOMAIN_DIFFUSION_FACTOR_CORRECTED
+            if self.is_particle_in_nanodomain((x, y))
+            else MEMBRANE_DIFFUSION_FACTOR_CORRECTED
+        )
+        x_dir, y_dir = [util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         self.paths[idx].append((x + x_dir, y + y_dir))
 
     def update(self) -> None:
