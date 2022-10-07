@@ -1,7 +1,7 @@
 from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
-from util import *
+import util
 
 from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
@@ -38,10 +38,10 @@ def handle_hop_diffusion(ax: plt.Axes, sim: HopDiffusion) -> None:
         ax.add_patch(boundary)
 
 def get_coordinates_for_plot(sim: Simulation, idx: int):
-    return Util.get_x_coordinates(sim.paths[idx]), Util.get_y_coordinates(sim.paths[idx])
+    return util.get_x_coordinates(sim.paths[idx]), util.get_y_coordinates(sim.paths[idx])
 
 def get_coordinates_for_heads(sim, idx: int):
-    return Util.get_last_point(sim.paths[idx])
+    return util.get_last_point(sim.paths[idx])
 
 
 class PlotGenerator:
