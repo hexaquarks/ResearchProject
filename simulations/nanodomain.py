@@ -32,7 +32,7 @@ class Nanodomain(Simulation):
             if self.is_particle_in_nanodomain((x, y))
             else MEMBRANE_DIFFUSION_FACTOR_CORRECTED
         )
-        x_dir, y_dir = [Util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
+        x_dir, y_dir = [util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
         self.paths[idx].append((x + x_dir, y + y_dir))
 
     def update(self) -> None:
