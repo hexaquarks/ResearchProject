@@ -44,47 +44,56 @@ def get_coordinates_for_plot(sim: Simulation, idx: int):
 def get_coordinates_for_heads(sim, idx: int):
     return util.get_last_point(sim.paths[idx])
 
+def get_matrix_for_plot(spc_manager: SpaceTimeCorrelationManager):
+    return spc_manager.calculate_matrix()
+
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
-        self.fig, self.ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
+        self.fig, self.ax = plt.subplots(1,2, figsize = [9, 5], dpi = DPI) # type: ignore
         self.sim = sim
         self.spc_manager = spc_manager
 
         self.path_plots = [
-            self.ax.plot(
+            self.ax[0].plot(
                 *get_coordinates_for_plot(sim, i),
                 markersize=15, color = colors[i])[0]
             for i in range(5)
         ]
 
         self.head_plots = [
-            self.ax.plot(
+            self.ax[0].plot(
                 *get_coordinates_for_heads(sim, i),
                 markersize=7, color = colors[i], marker = markers[i],
                 markerfacecolor="white")[0]
             for i in range(5)
         ]
         
+        self.matrix = [
+            self.ax[1].imshow(
+                get_matrix_for_plot(spc_manager)
+            )
+        ]
+
     def set_plot_parameters(self):
-        self.ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
-        self.ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
+        self.ax[0].tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
+        self.ax[0].tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
 
         ## legends and utilities
-        self.ax.set_xlabel(r"nm", fontsize=16)
-        self.ax.set_ylabel(r"nm", fontsize=16)
+        self.ax[0].set_xlabel(r"nm", fontsize=16)
+        self.ax[0].set_ylabel(r"nm", fontsize=16)
 
         ## border colors
-        self.ax.patch.set_edgecolor('black')
-        self.ax.patch.set_linewidth(2)
+        self.ax[0].patch.set_edgecolor('black')
+        self.ax[0].patch.set_linewidth(2)
 
-        self.ax.set_xlim(-RADIUS, RADIUS)
-        self.ax.set_ylim(-RADIUS, RADIUS)
+        self.ax[0].set_xlim(-RADIUS, RADIUS)
+        self.ax[0].set_ylim(-RADIUS, RADIUS)
 
     def initialize_animation(self):
         self.set_plot_parameters()
-        if isinstance(self.sim, Nanodomain): handle_nanodomain(self.ax, self.sim)
-        elif isinstance(self.sim, HopDiffusion): handle_hop_diffusion(self.ax, self.sim)
+        if isinstance(self.sim, Nanodomain): handle_nanodomain(self.ax[0], self.sim)
+        elif isinstance(self.sim, HopDiffusion): handle_hop_diffusion(self.ax[0], self.sim)
         return self.path_plots
 
     def update_animation(self, *args):
@@ -95,10 +104,12 @@ class PlotGenerator:
         for i, head_marker in enumerate(self.head_plots):
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
+        for matrix in self.matrix:
+            matrix.set_data(get_matrix_for_plot(self.spc_manager))
+        self.spc_manager.reset_local_matrix
         return self.path_plots
 
     def start_animation(self):
-        plt.plot(list([1,2]), list([3,4]))
         self.animation = FuncAnimation(
             fig = self.fig,
             func = self.update_animation,
