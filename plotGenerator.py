@@ -1,6 +1,7 @@
 from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
+from simulations.spaceTimeCorrelationManager import SpaceTimeCorrelationManager
 import util
 
 from matplotlib.animation import FuncAnimation # type: ignore
@@ -45,10 +46,10 @@ def get_coordinates_for_heads(sim, idx: int):
 
 
 class PlotGenerator:
-    def __init__(self, sim: Simulation, type: SimulationType):
+    def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
         self.fig, self.ax = plt.subplots(figsize = [5, 5], dpi = DPI) # type: ignore
         self.sim = sim
-        self.type = type
+        self.spc_manager = spc_manager
 
         self.path_plots = [
             self.ax.plot(
@@ -64,7 +65,7 @@ class PlotGenerator:
                 markerfacecolor="white")[0]
             for i in range(5)
         ]
-
+        
     def set_plot_parameters(self):
         self.ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
         self.ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
