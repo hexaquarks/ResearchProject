@@ -5,12 +5,13 @@ import util
 
 from matplotlib.animation import FuncAnimation # type: ignore
 from matplotlib.pyplot import figure
+from matplotlib import colors
 import matplotlib.pyplot as plt
 
 import numpy as np
 from matplotlib import rcParams # type: ignore
 
-colors: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
+#path_colors: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
 
@@ -50,19 +51,23 @@ class PlotGenerator:
         self.sim = sim
         self.type = type
 
+        path_colors = [
+            colors.to_hex(util.get_random_gray_shade()) for _ in range(sim.n_particles)
+        ]
+        
         self.path_plots = [
             self.ax.plot(
                 *get_coordinates_for_plot(sim, i),
-                markersize=15, color = colors[i])[0]
-            for i in range(5)
+                markersize=15, color = path_colors[i])[0]
+            for i in range(sim.n_particles)
         ]
 
         self.head_plots = [
             self.ax.plot(
                 *get_coordinates_for_heads(sim, i),
-                markersize=7, color = colors[i], marker = markers[i],
+                markersize=7, color = path_colors[i], marker = 'o',
                 markerfacecolor="white")[0]
-            for i in range(5)
+            for i in range(sim.n_particles)
         ]
 
     def set_plot_parameters(self):

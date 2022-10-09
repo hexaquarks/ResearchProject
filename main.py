@@ -11,7 +11,7 @@ def main() -> None:
     # brownian = Brownian()
     # nanoDomain = Nanodomain()
 
-    hopDiffusion = HopDiffusion()
+    hopDiffusion = HopDiffusion(10)
     plotGenerator = PlotGenerator(hopDiffusion, SimulationType.HOPDIFFUSION)
     plotGenerator.start_animation()
 

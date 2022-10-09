@@ -1,4 +1,5 @@
 import numpy as np
+import random 
 
 def compute_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
     return np.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
@@ -33,3 +34,8 @@ def change_direction(
     direction: tuple[float, float],
 ) -> tuple[float, float]:
     return tuple_object[0] - direction[0], tuple_object[1] - direction[1]
+
+def get_random_gray_shade() -> tuple[float, float ,float, float]:
+    black, gray = 0, 155
+    max_val = 255
+    return (random.randint(black, gray) / max_val,) * 3 + (1, )
