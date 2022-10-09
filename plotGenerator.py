@@ -51,7 +51,7 @@ def get_matrix_for_plot(spc_manager: SpaceTimeCorrelationManager):
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
-        self.fig, self.ax = plt.subplots(1,2, figsize = [9, 5], dpi = DPI) # type: ignore
+        self.fig, self.ax = plt.subplots(1, 2, figsize = [9, 5], dpi = DPI) # type: ignore
         self.sim = sim
         self.spc_manager = spc_manager
 
@@ -75,8 +75,11 @@ class PlotGenerator:
         ]
         
         self.matrix = self.ax[1].imshow(
-            get_matrix_for_plot(spc_manager)
+            get_matrix_for_plot(spc_manager),
+            cmap = "Blues", interpolation = "none",
+            aspect = "auto"
         )
+        self.fig.colorbar(self.matrix, ax = self.ax[1])
 
     def set_plot_parameters(self):
         self.ax[0].tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
@@ -107,8 +110,8 @@ class PlotGenerator:
         for i, head_marker in enumerate(self.head_plots):
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
-        #self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
-        #self.spc_manager.reset_local_matrix()
+        self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
+        self.spc_manager.reset_local_matrix()
         return self.path_plots
 
     def start_animation(self):

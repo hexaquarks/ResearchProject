@@ -12,11 +12,17 @@ class SpaceTimeCorrelationManager(Simulation):
         self.sim = sim
         self.matrix = [[0 for _ in range(N_VOXEL)] for _ in range(N_VOXEL)]
         
+    def is_out_of_bounds(self, pos: tuple[int, int]) -> bool:
+        x, y = pos[0], pos[1]
+        return x < -RADIUS or x > RADIUS or y > RADIUS or y < -RADIUS
+    
     def calculate_matrix(self) -> list[list[float]]:
         occupied_squares: set[tuple[int, int]] = set()
         
         for i in range(self.sim.n_particles):
             x, y = self.sim.paths[i][-1]
+            if (self.is_out_of_bounds((x, y))): continue
+            
             x += RADIUS
             y += RADIUS
             PIXEL_X = int(x // VOXEL_SIZE)
