@@ -17,11 +17,14 @@ class HopDiffusion(Simulation):
 
     def generate_boundaries(self) -> None:
         step = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
-
+        
         for i in range(6):
+            dynamic_step = step
             if i % 3 == 0: continue
+            if i == 2 or i == 5: dynamic_step = step * 1.25
+            
             horizontal = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
-            curr = i * step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * step
+            curr = i * dynamic_step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * dynamic_step
 
             width = BOUNDARY_THICKNESS if horizontal else (RADIUS * 2) + (BOUNDARY_OVERFLOW * 2)
             height = BOUNDARY_THICKNESS if not horizontal else (RADIUS * 2) + (BOUNDARY_OVERFLOW * 2)
@@ -105,7 +108,7 @@ class HopDiffusion(Simulation):
     def init_particles(self) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
 
-        for _ in range(5):
+        for _ in range(self.n_particles):
             while True:
                 pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
                 if not (pair in mem or self.is_particle_on_boundary(pair)):

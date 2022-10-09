@@ -36,7 +36,7 @@ class Simulation:
     def init_particles(self) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
 
-        for _ in range(5):
+        for _ in range(self.n_particles):
             while True:
                 pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
                 if pair not in mem: break
