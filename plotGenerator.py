@@ -69,11 +69,9 @@ class PlotGenerator:
             for i in range(5)
         ]
         
-        self.matrix = [
-            self.ax[1].imshow(
-                get_matrix_for_plot(spc_manager)
-            )
-        ]
+        self.matrix = self.ax[1].imshow(
+            get_matrix_for_plot(spc_manager)
+        )
 
     def set_plot_parameters(self):
         self.ax[0].tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
@@ -104,9 +102,8 @@ class PlotGenerator:
         for i, head_marker in enumerate(self.head_plots):
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
-        for matrix in self.matrix:
-            matrix.set_data(get_matrix_for_plot(self.spc_manager))
-        self.spc_manager.reset_local_matrix
+        #self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
+        #self.spc_manager.reset_local_matrix()
         return self.path_plots
 
     def start_animation(self):
@@ -114,7 +111,7 @@ class PlotGenerator:
             fig = self.fig,
             func = self.update_animation,
             init_func = self.initialize_animation,
-            interval = 20
+            interval = 100
         )
 
         plt.show(block = True) # type: ignore
