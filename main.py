@@ -12,7 +12,7 @@ def main() -> None:
     # brownian = Brownian()
     # nanoDomain = Nanodomain()
     
-    hopDiffusion = HopDiffusion(5);
+    hopDiffusion = HopDiffusion(20);
     space_time_correlation_manager = SpaceTimeCorrelationManager(hopDiffusion)
     
     plotGenerator = PlotGenerator(hopDiffusion, space_time_correlation_manager)

@@ -2,10 +2,11 @@ import random
 import numpy as np
 from enum import Enum
 from simulations.simulation import *
+from scipy.ndimage import gaussian_filter
 
-N_VOXEL = 24
+N_VOXEL = 128
 WIDTH = 2 * RADIUS
-VOXEL_SIZE = WIDTH / N_VOXEL # 24 x 24 voxels
+VOXEL_SIZE = WIDTH / N_VOXEL # N_VOXEL x N_VOXEL voxels
 
 class SpaceTimeCorrelationManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -27,7 +28,7 @@ class SpaceTimeCorrelationManager(Simulation):
             y += RADIUS
             PIXEL_X = int(x // VOXEL_SIZE)
             PIXEL_Y = int(y // VOXEL_SIZE)
-            self.matrix[PIXEL_X][PIXEL_Y] += 1
+            self.matrix[PIXEL_X][PIXEL_Y] += 1000
             
             occupied_squares.add(tuple[PIXEL_X, PIXEL_Y])
         
@@ -37,7 +38,11 @@ class SpaceTimeCorrelationManager(Simulation):
                 if pair not in occupied_squares:
                     pass
                 else:
-                    self.matrix[i][j] = self.matrix[i][j] - (self.matrix[i][j] / N_VOXEL ** 2)
+                    pass
+                    # self.matrix[i][j] = self.matrix[i][j] - (self.matrix[i][j] / N_VOXEL ** 2)
+                    
+        self.matrix = gaussian_filter(self.matrix, sigma = 7)
+        
         return self.matrix
     
     def reset_local_matrix(self) -> None:
