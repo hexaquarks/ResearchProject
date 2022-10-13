@@ -5,6 +5,7 @@ from simulations.spaceTimeCorrelationManager import SpaceTimeCorrelationManager
 import util
 
 from matplotlib.animation import FuncAnimation # type: ignore
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
 from matplotlib import colors
 import matplotlib.pyplot as plt
@@ -79,7 +80,10 @@ class PlotGenerator:
             cmap = "viridis", interpolation = "none",
             aspect = "auto", origin = "lower"
         )
-        self.fig.colorbar(self.matrix, ax = self.ax[1])
+        
+        divider = make_axes_locatable(self.ax[1])
+        cax = divider.append_axes('right', size="5%", pad=0.1)
+        self.fig.colorbar(self.matrix, cax = cax)
 
     def set_plot_parameters(self):
         self.ax[0].tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
