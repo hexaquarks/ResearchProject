@@ -28,7 +28,7 @@ class SpaceTimeCorrelationManager(Simulation):
             y += RADIUS
             PIXEL_X = int(x // VOXEL_SIZE)
             PIXEL_Y = int(y // VOXEL_SIZE)
-            self.matrix[PIXEL_X][PIXEL_Y] += 1000
+            self.matrix[PIXEL_X][PIXEL_Y] += 3000
             
             occupied_squares.add(tuple[PIXEL_X, PIXEL_Y])
         
@@ -41,7 +41,9 @@ class SpaceTimeCorrelationManager(Simulation):
                     pass
                     # self.matrix[i][j] = self.matrix[i][j] - (self.matrix[i][j] / N_VOXEL ** 2)
                     
-        self.matrix = gaussian_filter(self.matrix, sigma = 7)
+        self.matrix = gaussian_filter(self.matrix, sigma = 10) 
+        # note that a larger sigma induces a larger kernel such that
+        # the pixel gets blurred over a wider distance
         
         return self.matrix
     

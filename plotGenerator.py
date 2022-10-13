@@ -76,7 +76,7 @@ class PlotGenerator:
         
         self.matrix = self.ax[1].imshow(
             get_matrix_for_plot(spc_manager),
-            cmap = "Blues", interpolation = "none",
+            cmap = "viridis", interpolation = "none",
             aspect = "auto"
         )
         self.fig.colorbar(self.matrix, ax = self.ax[1])
