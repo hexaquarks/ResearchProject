@@ -29,6 +29,9 @@ class Simulation:
             [coordinate] for coordinate in self.particle_locations
         ]
 
+    def get_last_particle_coordinate(self, idx: int) -> tuple[float, float]:
+        return self.paths[idx][-1]
+    
     @staticmethod
     def get_random_canvas_value() -> int:
         return int(random.randint(-CORRECTED_CANVAS_RADIUS, CORRECTED_CANVAS_RADIUS))
