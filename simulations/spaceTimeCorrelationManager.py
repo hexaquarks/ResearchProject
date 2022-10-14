@@ -11,7 +11,7 @@ VOXEL_SIZE = WIDTH / N_VOXEL # N_VOXEL x N_VOXEL voxels
 class SpaceTimeCorrelationManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
-        self.matrix = [[0 for _ in range(N_VOXEL)] for _ in range(N_VOXEL)]
+        self.matrix: list[list[float]] = [[0. for _ in range(N_VOXEL)] for _ in range(N_VOXEL)]
         
     def is_out_of_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
@@ -19,6 +19,10 @@ class SpaceTimeCorrelationManager(Simulation):
     
     def apply_convolution_filter(self) -> None:
         self.matrix = gaussian_filter(self.matrix, sigma = 10) 
+    
+    def apply_gaussian_noise(self) -> None:
+        noise_delta = np.random.normal(0, .1, self.matrix.shape)
+        self.matrix += noise_delta
         
     def calculate_matrix(self) -> list[list[float]]:
         occupied_squares: set[tuple[int, int]] = set()
@@ -31,7 +35,7 @@ class SpaceTimeCorrelationManager(Simulation):
             y += RADIUS
             PIXEL_X = int(x // VOXEL_SIZE)
             PIXEL_Y = int(y // VOXEL_SIZE)
-            self.matrix[PIXEL_Y][PIXEL_X] += 2000
+            self.matrix[PIXEL_Y][PIXEL_X] += 2000.
             
             occupied_squares.add(tuple[PIXEL_X, PIXEL_Y])
         
@@ -45,6 +49,7 @@ class SpaceTimeCorrelationManager(Simulation):
                     # self.matrix[i][j] = self.matrix[i][j] - (self.matrix[i][j] / N_VOXEL ** 2)
                     
         self.apply_convolution_filter()
+        self.apply_gaussian_noise()
         # note that a larger sigma induces a larger kernel such that
         # the pixel gets blurred over a wider distance
         
