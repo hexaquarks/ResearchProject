@@ -53,7 +53,7 @@ def get_matrix_for_plot(spc_manager: SpaceTimeCorrelationManager):
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
-        self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI) # type: ignore
+        self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
         self.sim = sim
         self.spc_manager = spc_manager
 
@@ -91,9 +91,10 @@ class PlotGenerator:
         self.ax[1].set_yticks([32 * _ for _ in range(5)])
         self.ax[1].xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
         self.ax[1].yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
+        self.ax[1].get_yaxis().set_visible(False)
         
         self.ax[1].tick_params(axis = 'y', labelsize = 16)
-        self.ax[1].tick_params(axis = 'x', labelsize = 16)
+        self.ax[1].tick_params(axis = 'x', labelsize = 16, pad = 17.5)
         
         
     def set_plot_parameters(self):
