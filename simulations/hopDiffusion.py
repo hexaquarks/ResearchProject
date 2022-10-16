@@ -56,6 +56,17 @@ class HopDiffusion(Simulation):
                 return idx
         return -1
 
+    def move_particle_out_of_boundary_fix(
+        self,
+        new_pos: tuple[float, float],
+        x_dir: float = 1, y_dir: float = 1,
+    ) -> tuple[float, float]:
+        while self.is_particle_on_boundary(new_pos):
+            new_pos = util.increment_tuple_by_val(
+                new_pos, (np.sign(-x_dir), np.sign(-y_dir))
+            )
+        return new_pos
+    
     def make_particle_jump(
         self,
         new_pos: tuple[float, float],
@@ -74,19 +85,16 @@ class HopDiffusion(Simulation):
                 np.sign(y_dir) * BOUNDARY_JUMP,
             )
         )
-
+        
         # Special case: In some instances the jump may land the particle
         # on a subsequent boundary so we repeat the function. We decrement
         # the particle's coordinates until it is out.
-        while self.is_particle_on_boundary(new_pos):
-            new_pos = util.increment_tuple_by_val(
-                new_pos, (np.sign(-x_dir), np.sign(-y_dir))
-            )
-
-        return new_pos
+        return self.move_particle_out_of_boundary_fix(new_pos, x_dir, y_dir)
 
     def update_path(self, idx: int) -> None:
         x, y = self.paths[idx][-1]
+        if self.is_particle_on_boundary((x, y)): 
+            x, y = self.move_particle_out_of_boundary_fix((x, y))
         assert not self.is_particle_on_boundary((x, y))
 
         diffusion_factor = MEMBRANE_DIFFUSION_FACTOR_CORRECTED
