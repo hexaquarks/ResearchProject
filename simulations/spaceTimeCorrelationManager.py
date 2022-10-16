@@ -5,59 +5,61 @@ from enum import Enum
 from simulations.simulation import *
 from scipy.ndimage import gaussian_filter
 
-N_VOXEL = 128
+N_PIXEL = 128
 WIDTH = 2 * RADIUS
-VOXEL_SIZE = WIDTH / N_VOXEL # N_VOXEL x N_VOXEL voxels
-MATRIX_EXTENSION_FACTOR = N_VOXEL / 14 # extend the matrix by 10% of N_VOXEL all directions
-SIZE_OF_COLS_AND_ROWS = 14
+VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
+NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
+CONVOLUTION_SIGMA = 15 # note that a larger value yields a wider spread of the intensity
+PARTICLE_INTENSITY = 2600 # adjusted aesthetically
 
 class SpaceTimeCorrelationManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
-        self.matrix: np_t.NDArray[np.float32] = np.array([
-            [0. for _ in range(N_VOXEL + 2 * SIZE_OF_COLS_AND_ROWS)] 
-            for _ in range(N_VOXEL + 2 * SIZE_OF_COLS_AND_ROWS)], 
-            dtype = np.float32
-        )
-        
+        self.matrix: np_t.NDArray[np.float32]
+        self.reset_local_matrix()
+         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
-        factor = SIZE_OF_COLS_AND_ROWS * WIDTH / N_VOXEL
-        new_radius = RADIUS * factor
-        return x < -new_radius or x > new_radius or y > new_radius or y < -new_radius
+        stretch_factor = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND * WIDTH / N_PIXEL
+        new_radius = RADIUS * stretch_factor
+        return not (-new_radius < x < new_radius and 
+                    -new_radius < y < new_radius)
     
     def apply_convolution_filter(self) -> None:
-        self.matrix = gaussian_filter(self.matrix, sigma = 15) 
+        self.matrix = gaussian_filter(self.matrix, sigma = CONVOLUTION_SIGMA) 
     
     def apply_gaussian_noise(self) -> None:
         noise_delta = np.random.normal(0, .1, self.matrix.shape)
         self.matrix += noise_delta
         
-    def calculate_matrix(self) -> list[list[float]]:
+    def trim_matrix_for_display(self) -> None: 
+        val = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
+        self.matrix = self.matrix[val:-val, val:-val]
+        
+    def get_pixel_coord(self, x: float) -> int:
+        return int(x // VOXEL_SIZE) + NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
+    
+    def calculate_matrix(self) -> np_t.NDArray[np.float32]:
         # quick fix
-        if (len(self.matrix) != N_VOXEL + 2 * SIZE_OF_COLS_AND_ROWS): self.reset_local_matrix()
+        if (len(self.matrix) != N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND): 
+            self.reset_local_matrix()
         
         for i in range(self.sim.n_particles):
             x, y = self.sim.get_last_particle_coordinate(i)
             if (self.is_out_of_extended_bounds((x, y))): continue
-            
-            x += RADIUS
-            y += RADIUS
-            PIXEL_X = int(int(x // VOXEL_SIZE) + SIZE_OF_COLS_AND_ROWS)
-            PIXEL_Y = int(int(y // VOXEL_SIZE) + SIZE_OF_COLS_AND_ROWS)
-            self.matrix[PIXEL_Y][PIXEL_X] += 2600.
+            x, y = x + RADIUS, y + RADIUS
+            self.matrix[self.get_pixel_coord(y)][self.get_pixel_coord(x)] += PARTICLE_INTENSITY
             
         self.apply_convolution_filter()
         self.apply_gaussian_noise()
-        self.matrix = self.matrix[SIZE_OF_COLS_AND_ROWS:-SIZE_OF_COLS_AND_ROWS, SIZE_OF_COLS_AND_ROWS:-SIZE_OF_COLS_AND_ROWS]
+        self.trim_matrix_for_display()
         
-        # note that a larger sigma induces a larger kernel such that
-        # the pixel gets blurred over a wider distance
         return self.matrix
     
     def reset_local_matrix(self) -> None:
         self.matrix: np_t.NDArray[np.float32] = np.array([
-            [0. for _ in range(N_VOXEL + 2 * SIZE_OF_COLS_AND_ROWS)] 
-            for _ in range(N_VOXEL + 2 * SIZE_OF_COLS_AND_ROWS)], 
+                [0. for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)] 
+                for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)
+            ], 
             dtype = np.float32
         )
