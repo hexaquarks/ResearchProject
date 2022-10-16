@@ -20,10 +20,8 @@ class SpaceTimeCorrelationManager(Simulation):
          
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
-        stretch_factor = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND * WIDTH / N_PIXEL
-        new_radius = RADIUS * stretch_factor
-        return not (-new_radius < x < new_radius and 
-                    -new_radius < y < new_radius)
+        max_index = N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
+        return x < 0 or x >= max_index or y < 0 or y >= max_index
     
     def apply_convolution_filter(self) -> None:
         self.matrix = gaussian_filter(self.matrix, sigma = CONVOLUTION_SIGMA) 
@@ -46,9 +44,9 @@ class SpaceTimeCorrelationManager(Simulation):
         
         for i in range(self.sim.n_particles):
             x, y = self.sim.get_last_particle_coordinate(i)
+            x, y = self.get_pixel_coord(x + RADIUS), self.get_pixel_coord(y + RADIUS)
             if (self.is_out_of_extended_bounds((x, y))): continue
-            x, y = x + RADIUS, y + RADIUS
-            self.matrix[self.get_pixel_coord(y)][self.get_pixel_coord(x)] += PARTICLE_INTENSITY
+            self.matrix[y][x] += PARTICLE_INTENSITY
             
         self.apply_convolution_filter()
         self.apply_gaussian_noise()
