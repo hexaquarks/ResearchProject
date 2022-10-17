@@ -1,7 +1,6 @@
 import random
 import numpy as np
 import numpy.typing as np_t
-from enum import Enum
 from simulations.simulation import *
 from scipy.ndimage import gaussian_filter
 
@@ -10,7 +9,7 @@ WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
 CONVOLUTION_SIGMA = 15 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 2600 # adjusted aesthetically
+PARTICLE_INTENSITY = 2800 # adjusted aesthetically
 
 class SpaceTimeCorrelationManager(Simulation):
     def __init__(self, sim: Simulation) -> None:

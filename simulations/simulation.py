@@ -1,13 +1,5 @@
 import random
 import numpy as np
-from enum import Enum
-
-
-class SimulationType(Enum):
-     BROWNIAN = 1
-     NANODOMAIN = 2
-     HOPDIFFUSION = 3
-
 
 DPI = 100
 RADIUS_PADDING = 20

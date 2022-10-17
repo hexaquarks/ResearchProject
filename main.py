@@ -9,13 +9,13 @@ from util import *
 
 def main() -> None:
     rcParams.update({'figure.autolayout': True})
-    # brownian = Brownian()
-    # nanoDomain = Nanodomain()
+    # brownian = Brownian(6)
+    nanoDomain = Nanodomain(6)
     
-    hopDiffusion = HopDiffusion(6);
-    space_time_correlation_manager = SpaceTimeCorrelationManager(hopDiffusion)
+    # hopDiffusion = HopDiffusion(6);
+    space_time_correlation_manager = SpaceTimeCorrelationManager(nanoDomain)
     
-    plotGenerator = PlotGenerator(hopDiffusion, space_time_correlation_manager)
+    plotGenerator = PlotGenerator(nanoDomain, space_time_correlation_manager)
     plotGenerator.start_animation()
 
 if __name__ == '__main__':
