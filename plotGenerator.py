@@ -50,7 +50,6 @@ def get_coordinates_for_heads(sim, idx: int):
 def get_matrix_for_plot(spc_manager: SpaceTimeCorrelationManager):
     return spc_manager.calculate_matrix()
 
-
 class PlotGenerator:
     def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
@@ -60,27 +59,31 @@ class PlotGenerator:
         path_colors = [
             colors.to_hex(util.get_random_gray_shade()) for _ in range(sim.n_particles)
         ]
-        self.path_plots = [
-            self.ax[0].plot(
-                *get_coordinates_for_plot(sim, i),
-                markersize=15, color = path_colors2[i])[0]
-            for i in range(sim.n_particles)
-        ]
-        self.head_plots = [
-            self.ax[0].plot(
-                *get_coordinates_for_heads(sim, i),
-                markersize=7, color = path_colors2[i], marker = 'o',
-                markerfacecolor="white")[0]
-            for i in range(sim.n_particles)
-        ]
-        self.matrix = self.ax[1].imshow(
-            get_matrix_for_plot(spc_manager),
-            cmap = "viridis", interpolation = "none",
-            aspect = "auto", origin = "lower"
-        )
+        self.path_plots, self.head_plots, self.matrix = self.generate_figure_elements()
         self.adjust_colorbar()
         self.transform_image_axes()
 
+    def generate_figure_elements(self):
+        path_plots = [
+            self.ax[0].plot(
+                *get_coordinates_for_plot(self.sim, i),
+                markersize=15, color = path_colors2[i])[0]
+            for i in range(self.sim.n_particles)
+        ]
+        head_plots = [
+            self.ax[0].plot(
+                *get_coordinates_for_heads(self.sim, i),
+                markersize=7, color = path_colors2[i], marker = 'o',
+                markerfacecolor="white")[0]
+            for i in range(self.sim.n_particles)
+        ]
+        matrix = self.ax[1].imshow(
+            get_matrix_for_plot(self.spc_manager),
+            cmap = "viridis", interpolation = "none",
+            aspect = "auto", origin = "lower"
+        )
+        return path_plots, head_plots, matrix
+    
     def adjust_colorbar(self):
         divider = make_axes_locatable(self.ax[1])
         cax = divider.append_axes('right', size="5%", pad=0.1)
