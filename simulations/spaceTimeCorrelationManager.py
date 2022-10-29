@@ -16,7 +16,29 @@ class SpaceTimeCorrelationManager(Simulation):
         self.sim = sim
         self.matrix: np_t.NDArray[np.float32]
         self.reset_local_matrix()
+        self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = np.array([
+                [0. for _ in range(N_PIXEL)] for _ in range(N_PIXEL)
+            ], 
+            dtype = np.float32
+        )
+        self.image_counter = 0;
          
+    def increment_image_counter(self) -> None:
+        self.image_counter += 1
+    
+    def update_pixel_fluctuation(self, row: int, col: int) -> None:
+        new_intensity = ((self.pixel_fluctuation_matrix[row][col] * self.image_counter) +\
+            self.matrix[row][col]) / (self.image_counter + 1)
+        self.pixel_fluctuation_matrix[row][col] = new_intensity
+                    
+    def update_pixel_flucuation_matrix(self) -> None:
+        # self.matrix size should be correctly trimmed when we get into this function
+        assert(len(self.matrix) == N_PIXEL)
+        for i in range(N_PIXEL): 
+            for j in range(N_PIXEL): 
+                self.update_pixel_fluctuation(i, j)
+                
+        
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
         max_index = N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
@@ -50,6 +72,7 @@ class SpaceTimeCorrelationManager(Simulation):
         self.apply_convolution_filter()
         self.apply_gaussian_noise()
         self.trim_matrix_for_display()
+        self.update_pixel_flucuation_matrix()
         
         return self.matrix
     
