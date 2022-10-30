@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import numpy.typing as np_t
 from simulations.simulation import *

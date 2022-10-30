@@ -4,6 +4,7 @@ from simulations.nanodomain import *
 from simulations.hopDiffusion import *    
 from simulations.spaceTimeCorrelationManager import *  
 
+from matplotlib import rcParams # type: ignore
 from plotGenerator import *
 from util import *
 

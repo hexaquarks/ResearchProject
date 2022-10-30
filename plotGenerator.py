@@ -2,17 +2,15 @@ from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
 from simulations.spaceTimeCorrelationManager import SpaceTimeCorrelationManager
-import util
 
 from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
-import matplotlib.ticker as ticker
 from matplotlib.pyplot import figure
 from matplotlib import colors
-import matplotlib.pyplot as plt
 
-import numpy as np
-from matplotlib import rcParams # type: ignore
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import util
 
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
@@ -134,6 +132,7 @@ class PlotGenerator:
             head_marker.set_data(*coords)
         self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
         self.spc_manager.matrix = self.spc_manager.reset_local_matrix(True)
+        
         return self.path_plots
 
     def start_animation(self):
