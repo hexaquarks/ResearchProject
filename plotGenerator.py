@@ -133,7 +133,7 @@ class PlotGenerator:
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
         self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
-        self.spc_manager.reset_local_matrix()
+        self.spc_manager.matrix = self.spc_manager.reset_local_matrix(True)
         return self.path_plots
 
     def start_animation(self):

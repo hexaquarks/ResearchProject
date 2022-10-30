@@ -14,13 +14,8 @@ PARTICLE_INTENSITY = 2800 # adjusted aesthetically
 class SpaceTimeCorrelationManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
-        self.matrix: np_t.NDArray[np.float32]
-        self.reset_local_matrix()
-        self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = np.array([
-                [0. for _ in range(N_PIXEL)] for _ in range(N_PIXEL)
-            ], 
-            dtype = np.float32
-        )
+        self.matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
+        self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.image_counter = 0;
          
     def increment_image_counter(self) -> None:
@@ -37,7 +32,6 @@ class SpaceTimeCorrelationManager(Simulation):
         for i in range(N_PIXEL): 
             for j in range(N_PIXEL): 
                 self.update_pixel_fluctuation(i, j)
-                
         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
@@ -61,7 +55,7 @@ class SpaceTimeCorrelationManager(Simulation):
     def calculate_matrix(self) -> np_t.NDArray[np.float32]:
         # quick fix
         if (len(self.matrix) != N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND): 
-            self.reset_local_matrix()
+            self.matrix = self.reset_local_matrix(True)
         
         for i in range(self.sim.n_particles):
             x, y = self.sim.get_last_particle_coordinate(i)
@@ -76,10 +70,12 @@ class SpaceTimeCorrelationManager(Simulation):
         
         return self.matrix
     
-    def reset_local_matrix(self) -> None:
-        self.matrix: np_t.NDArray[np.float32] = np.array([
-                [0. for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)] 
-                for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)
+    def reset_local_matrix(self, is_extended: bool) -> np_t.NDArray[np.float32]:
+        _range = N_PIXEL + (2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND if is_extended else 0)
+        matrix: np_t.NDArray[np.float32] = np.array([
+                [0. for _ in range(_range)] 
+                for _ in range(_range)
             ], 
             dtype = np.float32
         )
+        return matrix
