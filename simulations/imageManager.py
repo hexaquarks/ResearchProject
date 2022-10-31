@@ -13,8 +13,10 @@ PARTICLE_INTENSITY = 2800 # adjusted aesthetically
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
+        self.images: list[np_t.NDArray[np.float32]] = []
         self.intensity_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
+        
         self.image_counter = 0;
          
     def increment_image_counter(self) -> None:
@@ -31,6 +33,9 @@ class ImageManager(Simulation):
         for i in range(N_PIXEL): 
             for j in range(N_PIXEL): 
                 self.update_pixel_fluctuation(i, j)
+
+    def add_pixel_fluctuation_matrix_to_images(self) -> None:
+        self.images.append(self.pixel_fluctuation_matrix)
         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
@@ -65,7 +70,9 @@ class ImageManager(Simulation):
         self.apply_convolution_filter()
         self.apply_gaussian_noise()
         self.trim_matrix_for_display()
+        
         self.update_pixel_flucuation_matrix()
+        self.add_pixel_fluctuation_matrix_to_images()
         
         return self.intensity_matrix
     
@@ -76,5 +83,5 @@ class ImageManager(Simulation):
                 for _ in range(_range)
             ], 
             dtype = np.float32
-        )
+        )   
         return matrix
