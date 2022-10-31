@@ -1,7 +1,7 @@
 from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
-from simulations.spaceTimeCorrelationManager import SpaceTimeCorrelationManager
+from simulations.imageManager import ImageManager
 
 from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
@@ -45,14 +45,14 @@ def get_coordinates_for_plot(sim: Simulation, idx: int):
 def get_coordinates_for_heads(sim, idx: int):
     return util.get_last_point(sim.paths[idx])
 
-def get_matrix_for_plot(spc_manager: SpaceTimeCorrelationManager):
-    return spc_manager.calculate_matrix()
+def get_matrix_for_plot(image_manager: ImageManager):
+    return image_manager.calculate_matrix()
 
 class PlotGenerator:
-    def __init__(self, sim: Simulation, spc_manager: SpaceTimeCorrelationManager):
+    def __init__(self, sim: Simulation, image_manager: ImageManager):
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
         self.sim = sim
-        self.spc_manager = spc_manager
+        self.image_manager = image_manager
 
         path_colors = [
             colors.to_hex(util.get_random_gray_shade()) for _ in range(sim.n_particles)
@@ -76,7 +76,7 @@ class PlotGenerator:
             for i in range(self.sim.n_particles)
         ]
         matrix = self.ax[1].imshow(
-            get_matrix_for_plot(self.spc_manager),
+            get_matrix_for_plot(self.image_manager),
             cmap = "viridis", interpolation = "none",
             aspect = "auto", origin = "lower"
         )
@@ -130,8 +130,8 @@ class PlotGenerator:
         for i, head_marker in enumerate(self.head_plots):
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
-        self.matrix.set_data(get_matrix_for_plot(self.spc_manager))
-        self.spc_manager.matrix = self.spc_manager.reset_local_matrix(True)
+        self.matrix.set_data(get_matrix_for_plot(self.image_manager))
+        self.image_manager.matrix = self.image_manager.reset_local_matrix(True)
         
         return self.path_plots
 

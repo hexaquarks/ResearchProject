@@ -2,7 +2,7 @@ from simulations.simulation import *
 from simulations.brownian import *
 from simulations.nanodomain import *    
 from simulations.hopDiffusion import *    
-from simulations.spaceTimeCorrelationManager import *  
+from simulations.imageManager import *  
 
 from matplotlib import rcParams # type: ignore
 from plotGenerator import *
@@ -14,9 +14,9 @@ def main() -> None:
     nanoDomain = Nanodomain(6)
     
     # hopDiffusion = HopDiffusion(6);
-    space_time_correlation_manager = SpaceTimeCorrelationManager(nanoDomain)
+    image_manager = ImageManager(nanoDomain)
     
-    plotGenerator = PlotGenerator(nanoDomain, space_time_correlation_manager)
+    plotGenerator = PlotGenerator(nanoDomain, image_manager)
     plotGenerator.start_animation()
 
 if __name__ == '__main__':
