@@ -7,7 +7,7 @@ from numpy import fft as fft
 class SpaceCorrelationManager(ImageManager):
     def __init__(self, image_manager: ImageManager) -> None:
         self.images: list[np_t.NDArray[np.float32]] = image_manager.images
-    
+        
     def correlate(
         self,
         im1: np_t.NDArray[np.float32], 
@@ -50,13 +50,12 @@ class SpaceCorrelationManager(ImageManager):
                                 fft.fft2(image)
                             )   
                         )
-            print('len is ', len(temp), ' ', len(temp[0]))
             ffts.append(
                 fft.fftshift(
                     fft.irfft2(
                         temp
                     )  
-                ) / (np.ndarray.mean(image) * len(image) ** 2) - 1
+                ) / (np.mean(image) * len(image) ** 2) - 1
             )
         return ffts
                 

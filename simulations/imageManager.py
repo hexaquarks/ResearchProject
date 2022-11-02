@@ -22,20 +22,22 @@ class ImageManager(Simulation):
     def increment_image_counter(self) -> None:
         self.image_counter += 1
     
-    def update_pixel_fluctuation(self, row: int, col: int) -> None:
+    def update_pixel_fluctuation(self, row: int, col: int):            
         new_intensity = ((self.pixel_fluctuation_matrix[row][col] * self.image_counter) +\
             self.intensity_matrix[row][col]) / (self.image_counter + 1)
         self.pixel_fluctuation_matrix[row][col] = new_intensity
+        return new_intensity
                     
-    def update_pixel_flucuation_matrix(self) -> None:
+    def update_pixel_flucuation_matrix(self):
         # self.intensity_matrix size should be correctly trimmed when we get into this function
         assert(len(self.intensity_matrix) == N_PIXEL)
-        for i in range(N_PIXEL): 
-            for j in range(N_PIXEL): 
-                self.update_pixel_fluctuation(i, j)
+        return [
+            [self.update_pixel_fluctuation(i, j) for j in range(N_PIXEL)]
+            for i in range(N_PIXEL)
+        ]
 
-    def add_pixel_fluctuation_matrix_to_images(self) -> None:
-        self.images.append(self.pixel_fluctuation_matrix)
+    def add_pixel_fluctuation_matrix_to_images(self, new_mat) -> None:
+        self.images.append( [row[:] for row in new_mat] )
         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
@@ -71,8 +73,8 @@ class ImageManager(Simulation):
         self.apply_gaussian_noise()
         self.trim_matrix_for_display()
         
-        self.update_pixel_flucuation_matrix()
-        self.add_pixel_fluctuation_matrix_to_images()
+        new_mat = self.update_pixel_flucuation_matrix()
+        self.add_pixel_fluctuation_matrix_to_images(new_mat)
         
         return self.intensity_matrix
     

@@ -7,8 +7,8 @@ from simulations.spaceCorrelationManager import SpaceCorrelationManager
 from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
-from matplotlib import colors
-from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import colors, projections, cm
+from mpl_toolkits.mplot3d import axes3d
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -122,24 +122,37 @@ class PlotGenerator:
         self.ax[0].set_ylim(-RADIUS, RADIUS)
 
     def initialize_space_correlation_manager(self) -> None:
-        spc_manger = SpaceCorrelationManager(self.image_manager)
         plt.close()
-        frame = spc_manger.get_frame()
-        # Set up grid and test data
-        nx, ny = len(frame[0]), len(frame[0][0])
-        x = range(nx)
-        y = range(ny)
-
-        data = frame[0]
-        print('len is ', len(data))
-
-        hf = plt.figure()
-        ha = hf.add_subplot(111, projection='3d')
-
+        spc_manger = SpaceCorrelationManager(self.image_manager)
+        frames = spc_manger.get_frame()
+        
+        fig= plt.figure(figsize = [6, 5], dpi = DPI) # type: ignore
+        ax = fig.add_subplot(1, 1, 1, projection='3d')
+        nx, ny = len(frames[0]), len(frames[0][0])
+        x, y = range(nx), range(ny)
+        data = frames[0]
         X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
-        ha.plot_surface(X.T, Y.T, data)
-
-        plt.show()
+        plot_t = [ax.plot_surface(X.T, Y.T, data, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)]
+        
+        def update_STICS_animation(frame_number):
+            data = frames[frame_number]
+            plot_t[0].remove()
+            plot_t[0] = ax.plot_surface(X.T, Y.T, data, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+            return frames
+        
+        def initialize_STICS_animation(): return frames
+        
+        animation = FuncAnimation(
+            fig = fig,
+            func = update_STICS_animation,
+            init_func = initialize_STICS_animation,
+            interval = ANIMATION_INTERVAL,
+            frames = ANIMATION_FRAMES,
+            repeat = False
+        )
+        plt.show(block = True) # type: ignore
         
         
     def initialize_animation(self):
@@ -158,8 +171,7 @@ class PlotGenerator:
             head_marker.set_data(*coords)
             
         self.matrix.set_data(get_matrix_for_plot(self.image_manager))
-        self.image_manager.matrix = self.image_manager.reset_local_matrix(True)
-        
+        self.image_manager.increment_image_counter()
         #if frame_number == ANIMATION_FRAMES - 1: plt.close()
             #self.initialize_space_correlation_manager()
         
@@ -177,7 +189,7 @@ class PlotGenerator:
 
         plt.show(block = False) # type: ignore
         plt.pause(2)
-        
         self.fig.tight_layout()
+        
         
         
