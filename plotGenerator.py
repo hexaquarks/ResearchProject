@@ -18,7 +18,7 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 10
+ANIMATION_FRAMES: int = 400
 ANIMATION_INTERVAL: int = 50
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -140,8 +140,6 @@ class PlotGenerator:
         ha.plot_surface(X.T, Y.T, data)
 
         plt.show()
-        print("showinh")
-        
         
         
     def initialize_animation(self):
@@ -162,8 +160,8 @@ class PlotGenerator:
         self.matrix.set_data(get_matrix_for_plot(self.image_manager))
         self.image_manager.matrix = self.image_manager.reset_local_matrix(True)
         
-        if frame_number + 1 == ANIMATION_FRAMES:
-            self.initialize_space_correlation_manager()
+        #if frame_number == ANIMATION_FRAMES - 1: plt.close()
+            #self.initialize_space_correlation_manager()
         
         return self.path_plots
 
@@ -177,5 +175,9 @@ class PlotGenerator:
             repeat = False
         )
 
-        plt.show(block = True) # type: ignore
+        plt.show(block = False) # type: ignore
+        plt.pause(2)
+        
         self.fig.tight_layout()
+        
+        

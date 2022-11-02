@@ -18,6 +18,7 @@ def main() -> None:
     
     plotGenerator = PlotGenerator(nanoDomain, image_manager)
     plotGenerator.start_animation()
+    plotGenerator.initialize_space_correlation_manager()
     
 
 if __name__ == '__main__':
