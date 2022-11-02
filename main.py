@@ -18,7 +18,7 @@ def main() -> None:
     
     plotGenerator = PlotGenerator(nanoDomain, image_manager)
     plotGenerator.start_animation()
-    print('animation finished')
+    
 
 if __name__ == '__main__':
     main()

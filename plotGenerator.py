@@ -8,6 +8,7 @@ from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
 from matplotlib import colors
+from mpl_toolkits.mplot3d import Axes3D
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -17,7 +18,7 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 60
+ANIMATION_FRAMES: int = 10
 ANIMATION_INTERVAL: int = 50
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -122,6 +123,25 @@ class PlotGenerator:
 
     def initialize_space_correlation_manager(self) -> None:
         spc_manger = SpaceCorrelationManager(self.image_manager)
+        plt.close()
+        frame = spc_manger.get_frame()
+        # Set up grid and test data
+        nx, ny = len(frame[0]), len(frame[0])
+        x = range(nx)
+        y = range(ny)
+
+        data = frame[0]
+
+        hf = plt.figure()
+        ha = hf.add_subplot(111, projection='3d')
+
+        X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
+        ha.plot_surface(X, Y, data)
+
+        plt.show()
+        print("showinh")
+        
+        
         
     def initialize_animation(self):
         self.set_plot_parameters()
