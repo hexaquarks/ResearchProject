@@ -2,19 +2,24 @@ from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
 from simulations.imageManager import ImageManager
+from simulations.spaceCorrelationManager import SpaceCorrelationManager
 
 from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
 from matplotlib import colors
+from mpl_toolkits.mplot3d import Axes3D
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from simulations.spaceCorrelationManager import SpaceCorrelationManager
 import util
 
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
+ANIMATION_FRAMES: int = 400
+ANIMATION_INTERVAL: int = 50
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -116,13 +121,34 @@ class PlotGenerator:
         self.ax[0].set_xlim(-RADIUS, RADIUS)
         self.ax[0].set_ylim(-RADIUS, RADIUS)
 
+    def initialize_space_correlation_manager(self) -> None:
+        spc_manger = SpaceCorrelationManager(self.image_manager)
+        plt.close()
+        frame = spc_manger.get_frame()
+        # Set up grid and test data
+        nx, ny = len(frame[0]), len(frame[0][0])
+        x = range(nx)
+        y = range(ny)
+
+        data = frame[0]
+        print('len is ', len(data))
+
+        hf = plt.figure()
+        ha = hf.add_subplot(111, projection='3d')
+
+        X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
+        ha.plot_surface(X.T, Y.T, data)
+
+        plt.show()
+        
+        
     def initialize_animation(self):
         self.set_plot_parameters()
         if isinstance(self.sim, Nanodomain): handle_nanodomain(self.ax[0], self.sim)
         elif isinstance(self.sim, HopDiffusion): handle_hop_diffusion(self.ax[0], self.sim)
         return self.path_plots
 
-    def update_animation(self, *args):
+    def update_animation(self, frame_number):
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
             coords = get_coordinates_for_plot(self.sim, i)
@@ -130,8 +156,12 @@ class PlotGenerator:
         for i, head_marker in enumerate(self.head_plots):
             coords = get_coordinates_for_heads(self.sim, i)
             head_marker.set_data(*coords)
+            
         self.matrix.set_data(get_matrix_for_plot(self.image_manager))
         self.image_manager.matrix = self.image_manager.reset_local_matrix(True)
+        
+        #if frame_number == ANIMATION_FRAMES - 1: plt.close()
+            #self.initialize_space_correlation_manager()
         
         return self.path_plots
 
@@ -140,8 +170,14 @@ class PlotGenerator:
             fig = self.fig,
             func = self.update_animation,
             init_func = self.initialize_animation,
-            interval = 100
+            interval = ANIMATION_INTERVAL,
+            frames = ANIMATION_FRAMES,
+            repeat = False
         )
 
-        plt.show(block = True) # type: ignore
+        plt.show(block = False) # type: ignore
+        plt.pause(2)
+        
         self.fig.tight_layout()
+        
+        
