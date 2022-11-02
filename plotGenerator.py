@@ -126,17 +126,18 @@ class PlotGenerator:
         plt.close()
         frame = spc_manger.get_frame()
         # Set up grid and test data
-        nx, ny = len(frame[0]), len(frame[0])
+        nx, ny = len(frame[0]), len(frame[0][0])
         x = range(nx)
         y = range(ny)
 
         data = frame[0]
+        print('len is ', len(data))
 
         hf = plt.figure()
         ha = hf.add_subplot(111, projection='3d')
 
         X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
-        ha.plot_surface(X, Y, data)
+        ha.plot_surface(X.T, Y.T, data)
 
         plt.show()
         print("showinh")
