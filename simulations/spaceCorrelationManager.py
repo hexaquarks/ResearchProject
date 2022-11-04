@@ -33,35 +33,27 @@ class SpaceCorrelationManager(ImageManager):
                     self.correlate(self.images[curr_idx], self.images[curr_idx + shift])
                 )
                 curr_idx += 1
-                print('out')
             to_iterate -= 1
             shift += 1
             frame.append(self.compute_average(curr_matrices))
-            print('in ', to_iterate)
         
         return frame
     
     def get_frame(self) -> list[np_t.NDArray[np.float32]]:
-        ffts = []
+        fft_images = []
+        normalization_factor = (np.mean(image) * len(image) ** 2)
+        
         for image in self.images:
-            temp = np.matmul(
+            fft_images.append(
+                fft.fftshift(
+                    fft.irfft2(
+                        np.matmul(
                             fft.fft2(image),
                             np.matrix.conjugate(
                                 fft.fft2(image)
                             )   
                         )
-            ffts.append(
-                fft.fftshift(
-                    fft.irfft2(
-                        temp
                     )  
-                ) / (np.mean(image) * len(image) ** 2) - 1
+                ) / normalization_factor - 1
             )
-        return ffts
-                
-            
-    
-        
-        
-        
-    
+        return fft_images

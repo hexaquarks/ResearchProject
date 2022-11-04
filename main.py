@@ -11,12 +11,12 @@ from util import *
 def main() -> None:
     rcParams.update({'figure.autolayout': True})
     # brownian = Brownian(6)
-    nanoDomain = Nanodomain(6)
+    # nanoDomain = Nanodomain(6)
     
-    # hopDiffusion = HopDiffusion(6);
-    image_manager = ImageManager(nanoDomain)
+    hopDiffusion = HopDiffusion(6);
+    image_manager = ImageManager(hopDiffusion)
     
-    plotGenerator = PlotGenerator(nanoDomain, image_manager)
+    plotGenerator = PlotGenerator(hopDiffusion, image_manager)
     plotGenerator.start_animation()
     plotGenerator.initialize_space_correlation_manager()
     

@@ -18,7 +18,7 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 400
+ANIMATION_FRAMES: int = 1600
 ANIMATION_INTERVAL: int = 50
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -132,13 +132,13 @@ class PlotGenerator:
         x, y = range(nx), range(ny)
         data = frames[0]
         X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
-        plot_t = [ax.plot_surface(X.T, Y.T, data, cmap=cm.coolwarm,
+        plot_t = [ax.plot_surface(X.T, Y.T, data, cmap=cm.Greys,
                        linewidth=0, antialiased=False)]
         
         def update_STICS_animation(frame_number):
             data = frames[frame_number]
             plot_t[0].remove()
-            plot_t[0] = ax.plot_surface(X.T, Y.T, data, cmap=cm.coolwarm,
+            plot_t[0] = ax.plot_surface(X.T, Y.T, data, cmap=cm.Greys,
                        linewidth=0, antialiased=False)
             return frames
         
@@ -188,7 +188,7 @@ class PlotGenerator:
         )
 
         plt.show(block = False) # type: ignore
-        plt.pause(2)
+        plt.pause(8)
         self.fig.tight_layout()
         
         
