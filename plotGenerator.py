@@ -1,3 +1,4 @@
+import matplotlib.tri as mtri
 from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
@@ -129,17 +130,20 @@ class PlotGenerator:
         fig= plt.figure(figsize = [6, 5], dpi = DPI) # type: ignore
         ax = fig.add_subplot(1, 1, 1, projection='3d')
         nx, ny = len(frames[0]), len(frames[0][0])
+        print(nx)
+        print(ny)
         x, y = range(nx), range(ny)
-        data = frames[0]
+        data = frames[0]    
         X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
-        plot_t = [ax.plot_surface(X.T, Y.T, data, cmap=cm.Greys,
-                       linewidth=0, antialiased=False)]
+        
+        plot_t = [ax.plot_surface(X, Y, data, cmap=cm.Spectral,
+                       linewidth=1)]
         
         def update_STICS_animation(frame_number):
             data = frames[frame_number]
             plot_t[0].remove()
-            plot_t[0] = ax.plot_surface(X.T, Y.T, data, cmap=cm.Greys,
-                       linewidth=0, antialiased=False)
+            plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.Spectral,
+                       linewidth=1)
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -188,7 +192,7 @@ class PlotGenerator:
         )
 
         plt.show(block = False) # type: ignore
-        plt.pause(8)
+        plt.pause(3)
         self.fig.tight_layout()
         
         

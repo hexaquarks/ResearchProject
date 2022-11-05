@@ -22,7 +22,7 @@ class ImageManager(Simulation):
     def increment_image_counter(self) -> None:
         self.image_counter += 1
     
-    def update_pixel_fluctuation(self, row: int, col: int):            
+    def update_pixel_fluctuation(self, row: int, col: int):  
         new_intensity = ((self.pixel_fluctuation_matrix[row][col] * self.image_counter) +\
             self.intensity_matrix[row][col]) / (self.image_counter + 1)
         self.pixel_fluctuation_matrix[row][col] = new_intensity
