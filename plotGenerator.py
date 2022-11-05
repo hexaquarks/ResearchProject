@@ -19,7 +19,7 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 1600
+ANIMATION_FRAMES: int = 1000
 ANIMATION_INTERVAL: int = 50
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -140,6 +140,9 @@ class PlotGenerator:
                        linewidth=1)]
         
         def update_STICS_animation(frame_number):
+            if (frame_number ==  len(frames) - 1):
+                util.export_images_to_tiff(self.image_manager.images)
+                print('finished')
             data = frames[frame_number]
             plot_t[0].remove()
             plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.Spectral,
@@ -153,7 +156,7 @@ class PlotGenerator:
             func = update_STICS_animation,
             init_func = initialize_STICS_animation,
             interval = ANIMATION_INTERVAL,
-            frames = ANIMATION_FRAMES,
+            frames = ANIMATION_FRAMES - ANIMATION_INTERVAL,
             repeat = False
         )
         plt.show(block = True) # type: ignore
