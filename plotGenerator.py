@@ -19,8 +19,8 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 1000
-ANIMATION_INTERVAL: int = 50
+ANIMATION_FRAMES: int = 10000
+ANIMATION_INTERVAL: int = 500
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -195,7 +195,7 @@ class PlotGenerator:
         )
 
         plt.show(block = False) # type: ignore
-        plt.pause(3)
+        plt.pause(10)
         self.fig.tight_layout()
         
         
