@@ -1,5 +1,9 @@
 import numpy as np
 import random 
+import cv2
+import sys
+import numpy.typing as np_t
+import tifffile as tiff
 
 def compute_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
     return np.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
@@ -39,3 +43,11 @@ def get_random_gray_shade() -> tuple[float, float ,float, float]:
     black, gray = 0, 155
     max_val = 255
     return (random.randint(black, gray) / max_val,) * 3 + (1, )
+
+def export_images_to_tiff(images: list[np_t.NDArray[np.float32]]):
+    for i, image in enumerate(images):
+        filename = f'data/beads-{i + 1}-ch1.tiff'
+        
+        tiff.imsave(filename, image)
+
+
