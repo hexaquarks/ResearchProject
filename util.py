@@ -1,6 +1,7 @@
 import numpy as np
 import random 
 import cv2
+import sys
 import numpy.typing as np_t
 import tifffile as tiff
 
@@ -46,20 +47,7 @@ def get_random_gray_shade() -> tuple[float, float ,float, float]:
 def export_images_to_tiff(images: list[np_t.NDArray[np.float32]]):
     for i, image in enumerate(images):
         filename = f'data/beads-{i + 1}-ch1.tiff'
-        #a = np.array([[-0.1235 for _ in range(128)] for _ in range(128)], dtype=np.float16)
-        tiff.imsave(filename, image)
-        # #testing
-        # image = cv2.imread('temp.tiff')
-        # print(image)
         
-    print('=====Begintesting=====')
-    image = tiff.imread('beads-2-ch1.tiff')
-    print(image.max())
-    print(image)
-    print(len(image))
-    print(len(image[0]))
-    image2 = tiff.imread('data/beads-2-ch1.tiff')
-    print(image2.max())
-    print('=====Endtesting=====')
+        tiff.imsave(filename, image)
 
 
