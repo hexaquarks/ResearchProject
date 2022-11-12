@@ -47,16 +47,16 @@ class SpaceCorrelationManager(ImageManager):
         for image in self.images:
             normalization_factor = (np.mean(image) * len(image) ** 2)
             fft_images.append(
-                fft.irfft2(
-                    np.real(
-                        np.matmul(
-                            fft.fft2(image),
-                            np.matrix.conjugate(
-                                fft.fft2(image)
+                    fft.irfft2(
+                        np.real(
+                            np.matmul(
+                                fft.fft2(image),
+                                np.matrix.conjugate(
+                                    fft.fft2(image)
+                                )
                             )
-                        )
-                    ), 
-                    s=(128, 128)
-                ) / normalization_factor - 1
+                        ), 
+                        s=(128, 128)
+                    ) / normalization_factor - 1
             )
         return fft_images
