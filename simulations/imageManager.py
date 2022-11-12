@@ -7,8 +7,8 @@ N_PIXEL = 128
 WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
-CONVOLUTION_SIGMA = 15 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 2800 # adjusted aesthetically
+CONVOLUTION_SIGMA = 14 # note that a larger value yields a wider spread of the intensity
+PARTICLE_INTENSITY = 50000 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -22,7 +22,11 @@ class ImageManager(Simulation):
     def increment_image_counter(self) -> None:
         self.image_counter += 1
     
-    def update_pixel_fluctuation(self, row: int, col: int):  
+    def update_pixel_fluctuation_space(self, row: int, col: int):  
+        avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
+        return self.intensity_matrix[col][row] - avg
+    
+    def update_pixel_fluctuation_time(self, row: int, col: int):
         new_intensity = ((self.pixel_fluctuation_matrix[row][col] * self.image_counter) +\
             self.intensity_matrix[row][col]) / (self.image_counter + 1)
         self.pixel_fluctuation_matrix[row][col] = new_intensity
@@ -32,7 +36,7 @@ class ImageManager(Simulation):
         # self.intensity_matrix size should be correctly trimmed when we get into this function
         assert(len(self.intensity_matrix) == N_PIXEL)
         return [
-            [self.update_pixel_fluctuation(i, j) for j in range(N_PIXEL)]
+            [self.update_pixel_fluctuation_space(i, j) for j in range(N_PIXEL)]
             for i in range(N_PIXEL)
         ]
 
@@ -73,7 +77,12 @@ class ImageManager(Simulation):
         self.apply_gaussian_noise()
         self.trim_matrix_for_display()
         
-        new_mat = self.update_pixel_flucuation_matrix()
+        #new_mat = self.update_pixel_flucuation_matrix()
+        avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
+        new_mat = [
+            [self.intensity_matrix[i][j] - avg for j in range(N_PIXEL)] 
+            for i in range(N_PIXEL)
+        ]
         self.add_pixel_fluctuation_matrix_to_images(new_mat)
         
         return self.intensity_matrix
