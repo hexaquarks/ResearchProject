@@ -50,4 +50,8 @@ def export_images_to_tiff(images: list[np_t.NDArray[np.float32]]):
         
         tiff.imsave(filename, image)
 
-
+def export_images_to_text():
+    a = np.matrix(tiff.imread('./data/beads-1-ch1.tiff'))
+    with open('values.txt', 'wb') as f:
+        for line in a:
+            np.savetxt(f, line, fmt='%.2f')
