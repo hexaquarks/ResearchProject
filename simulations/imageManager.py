@@ -7,8 +7,8 @@ N_PIXEL = 128
 WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
-CONVOLUTION_SIGMA = 14 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 50000 # adjusted aesthetically
+CONVOLUTION_SIGMA = 10 # note that a larger value yields a wider spread of the intensity
+PARTICLE_INTENSITY = 30000 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -24,7 +24,8 @@ class ImageManager(Simulation):
     
     def update_pixel_fluctuation_space(self, row: int, col: int):  
         avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
-        return self.intensity_matrix[col][row] - avg
+        new_val = self.intensity_matrix[col][row] - avg
+        return 0 if new_val < 0 else new_val
     
     def update_pixel_fluctuation_time(self, row: int, col: int):
         new_intensity = ((self.pixel_fluctuation_matrix[row][col] * self.image_counter) +\
@@ -80,7 +81,7 @@ class ImageManager(Simulation):
         #new_mat = self.update_pixel_flucuation_matrix()
         avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
         new_mat = [
-            [self.intensity_matrix[i][j] - avg for j in range(N_PIXEL)] 
+            [0 if self.intensity_matrix[i][j] - avg < 0 else self.intensity_matrix[i][j] - avg for j in range(N_PIXEL)] 
             for i in range(N_PIXEL)
         ]
         self.add_pixel_fluctuation_matrix_to_images(new_mat)

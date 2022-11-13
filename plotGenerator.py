@@ -19,8 +19,8 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 10000
-ANIMATION_INTERVAL: int = 500
+ANIMATION_FRAMES: int = 2000
+ANIMATION_INTERVAL: int = 200
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -140,7 +140,7 @@ class PlotGenerator:
                        linewidth=1)]
         
         def update_STICS_animation(frame_number):
-            if (frame_number ==  len(frames) - 1):
+            if (frame_number == len(frames) - 1):
                 util.export_images_to_tiff(self.image_manager.images)
                 print('finished')
             data = frames[frame_number]
@@ -195,7 +195,7 @@ class PlotGenerator:
         )
 
         plt.show(block = False) # type: ignore
-        plt.pause(10)
+        plt.pause(2)
         self.fig.tight_layout()
         
         
