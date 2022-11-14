@@ -19,7 +19,7 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 2000
+ANIMATION_FRAMES: int = 10
 ANIMATION_INTERVAL: int = 200
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -140,10 +140,7 @@ class PlotGenerator:
                        linewidth=1)]
         
         def update_STICS_animation(frame_number):
-            if (frame_number == len(frames) - 1):
-                util.export_images_to_tiff(self.image_manager.images)
-                print('finished')
-            data = frames[frame_number]
+            data = frames[frame_number] 
             plot_t[0].remove()
             plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.Spectral,
                        linewidth=1)
@@ -169,6 +166,10 @@ class PlotGenerator:
         return self.path_plots
 
     def update_animation(self, frame_number):
+        if frame_number + 1 == ANIMATION_FRAMES: 
+            util.export_images_to_tiff(self.image_manager.intensity_matrices)
+            plt.close(self.fig)
+            
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
             coords = get_coordinates_for_plot(self.sim, i)
@@ -179,8 +180,6 @@ class PlotGenerator:
             
         self.matrix.set_data(get_matrix_for_plot(self.image_manager))
         self.image_manager.increment_image_counter()
-        #if frame_number == ANIMATION_FRAMES - 1: plt.close()
-            #self.initialize_space_correlation_manager()
         
         return self.path_plots
 
@@ -194,8 +193,8 @@ class PlotGenerator:
             repeat = False
         )
 
-        plt.show(block = False) # type: ignore
-        plt.pause(2)
+        plt.show(block = True) # type: ignore
+        #plt.pause(2)
         self.fig.tight_layout()
         
         

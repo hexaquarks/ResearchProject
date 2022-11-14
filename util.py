@@ -47,7 +47,6 @@ def get_random_gray_shade() -> tuple[float, float ,float, float]:
 def export_images_to_tiff(images: list[np_t.NDArray[np.float32]]):
     for i, image in enumerate(images):
         filename = f'data/beads-{i + 1}-ch1.tiff'
-        
         tiff.imsave(filename, image)
 
 def export_images_to_text():

@@ -14,6 +14,8 @@ class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
         self.images: list[np_t.NDArray[np.float32]] = []
+        self.intensity_matrices: list[np_t.NDArray[np.float32]] = []
+        
         self.intensity_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         
@@ -43,6 +45,9 @@ class ImageManager(Simulation):
 
     def add_pixel_fluctuation_matrix_to_images(self, new_mat) -> None:
         self.images.append( [row[:] for row in new_mat] )
+    
+    def add_intensity_matrix_to_storage(self) -> None:
+        self.intensity_matrices.append( [row[:] for row in self.intensity_matrix] )
         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
         x, y = pos[0], pos[1]
@@ -85,6 +90,7 @@ class ImageManager(Simulation):
             for i in range(N_PIXEL)
         ]
         self.add_pixel_fluctuation_matrix_to_images(new_mat)
+        self.add_intensity_matrix_to_storage()
         
         return self.intensity_matrix
     

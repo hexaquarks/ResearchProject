@@ -18,7 +18,7 @@ def main() -> None:
     
     plotGenerator = PlotGenerator(hopDiffusion, image_manager)
     plotGenerator.start_animation()
-    plotGenerator.initialize_space_correlation_manager()
+    # plotGenerator.initialize_space_correlation_manager()
     
 
 if __name__ == '__main__':
