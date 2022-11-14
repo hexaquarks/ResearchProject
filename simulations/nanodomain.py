@@ -8,9 +8,9 @@ class Nanodomain(Simulation):
     def __init__(self, n: int = 5):
         super().__init__(n)
         self.nanodomain_coordinates: list[tuple[float, float]] = [
-            (-300, 300), (0, 0), (400, -180), (-390, -480)
+            (-600, 600), (0, 0), (800, -360), (-780, -960)
         ]
-        self.nanodomain_radii: list[int] = [240, 60, 150, 420]
+        self.nanodomain_radii: list[int] = [480, 120, 300, 940]
 
     def get_nanodomain_attributes(self) -> list[tuple]:
         return list(map(

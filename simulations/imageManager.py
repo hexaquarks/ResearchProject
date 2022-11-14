@@ -3,12 +3,12 @@ import numpy.typing as np_t
 from simulations.simulation import *
 from scipy.ndimage import gaussian_filter
 
-N_PIXEL = 128
+N_PIXEL = 32
 WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
-CONVOLUTION_SIGMA = 10 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 30000 # adjusted aesthetically
+CONVOLUTION_SIGMA = 3 # note that a larger value yields a wider spread of the intensity
+PARTICLE_INTENSITY = 500 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -58,8 +58,8 @@ class ImageManager(Simulation):
         self.intensity_matrix = gaussian_filter(self.intensity_matrix, sigma = CONVOLUTION_SIGMA) 
     
     def apply_gaussian_noise(self) -> None:
-        noise_delta = np.random.normal(0, .1, self.intensity_matrix.shape)
-        self.intensity_matrix += noise_delta
+        noise_delta = np.abs(np.random.normal(0, 1, self.intensity_matrix.shape))
+        #self.intensity_matrix += noise_delta
         
     def trim_matrix_for_display(self) -> None: 
         val = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND

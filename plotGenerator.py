@@ -19,8 +19,10 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 10
-ANIMATION_INTERVAL: int = 200
+ANIMATION_FRAMES: int = 50
+ANIMATION_INTERVAL: int = 100
+N_PIXEL = 32
+NM_IN_BETWEEN_AXIS_TICKS = 800
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -94,11 +96,11 @@ class PlotGenerator:
         self.fig.colorbar(self.matrix, cax = cax)
     
     def transform_image_axes(self):
-        self.ax[1].set_xticks([32 * _ for _ in range(5)])
-        self.ax[1].set_yticks([32 * _ for _ in range(5)])
-        self.ax[1].xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
-        self.ax[1].yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
-        self.ax[1].get_yaxis().set_visible(False)
+        # self.ax[1].set_xticks([32 * _ for _ in range(5)])
+        # self.ax[1].set_yticks([32 * _ for _ in range(5)])
+        # self.ax[1].xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
+        # self.ax[1].yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ('%d') % float(x * (2 * RADIUS / 128) - RADIUS)))
+        # self.ax[1].get_yaxis().set_visible(False)
         
         self.ax[1].tick_params(axis = 'y', labelsize = 16)
         self.ax[1].tick_params(axis = 'x', labelsize = 16, pad = 17.5)
@@ -107,8 +109,8 @@ class PlotGenerator:
     def set_plot_parameters(self):
         self.ax[0].tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
         self.ax[0].tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
-        self.ax[0].set_xticks([-RADIUS + (375 * _) for _ in range(5)])
-        self.ax[0].set_yticks([-RADIUS + (375 * _) for _ in range(5)])
+        self.ax[0].set_xticks([-RADIUS + (NM_IN_BETWEEN_AXIS_TICKS * _) for _ in range(5)])
+        self.ax[0].set_yticks([-RADIUS + (NM_IN_BETWEEN_AXIS_TICKS * _) for _ in range(5)])
         
         ## legends and utilities
         for ax in self.ax:
@@ -168,6 +170,7 @@ class PlotGenerator:
     def update_animation(self, frame_number):
         if frame_number + 1 == ANIMATION_FRAMES: 
             util.export_images_to_tiff(self.image_manager.intensity_matrices)
+            util.export_images_to_text()
             plt.close(self.fig)
             
         self.sim.update()
