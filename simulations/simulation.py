@@ -14,9 +14,9 @@ MEMBRANE_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR * DIFFUSI
 
 
 class Simulation:
-    def __init__(self, n: int = 5) -> None:
+    def __init__(self, n: int = 5, spawn_in_center: bool = False) -> None:
         self.n_particles: int = n
-        self.particle_locations: list[tuple[float, float]] = list(self.init_particles())
+        self.particle_locations: list[tuple[float, float]] = list(self.init_particles(spawn_in_center))
         self.paths: list[list[tuple[float, float]]] = [
             [coordinate] for coordinate in self.particle_locations
         ]
@@ -27,13 +27,20 @@ class Simulation:
     @staticmethod
     def get_random_canvas_value() -> int:
         return int(random.randint(-CORRECTED_CANVAS_RADIUS, CORRECTED_CANVAS_RADIUS))
-
-    def init_particles(self) -> set[tuple[float, float]]:
+    
+    @staticmethod
+    def get_random_center_canvas_value() -> int:
+        return int(random.randint(-500, 500))  
+    
+    def init_particles(self, spawn_in_center: bool = False) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
-
+            
         for _ in range(self.n_particles):
             while True:
-                pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
+                if spawn_in_center:
+                    pair = (self.get_random_center_canvas_value(), self.get_random_center_canvas_value())
+                else:
+                    pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
                 if pair not in mem: break
             mem.add(pair)
 

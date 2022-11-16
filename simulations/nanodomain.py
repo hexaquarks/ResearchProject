@@ -5,8 +5,8 @@ NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECT
 
 
 class Nanodomain(Simulation):
-    def __init__(self, n: int = 5):
-        super().__init__(n)
+    def __init__(self, n: int = 5, spawn_in_center: bool = False):
+        super().__init__(n, spawn_in_center)
         self.nanodomain_coordinates: list[tuple[float, float]] = [
             (-600, 600), (0, 0), (800, -360), (-780, -960)
         ]

@@ -9,11 +9,11 @@ HOP_PROBABILITY_PERCENTAGE: float = 0.05
 
 
 class HopDiffusion(Simulation):
-    def __init__(self, n: int = 5) -> None:
+    def __init__(self, n: int = 5, spawn_in_center: bool = False) -> None:
         self.boundary_coordinates_for_plot: list[tuple[int, int, int, int]] = []
         self.boundary_coordinates: list[tuple[tuple[float, float], tuple[float, float]]] = []
         self.generate_boundaries()
-        super().__init__(n)
+        super().__init__(n, spawn_in_center)
 
     def generate_boundaries(self) -> None:
         step = (RADIUS * 2) // NUMBER_OF_COMPARTMENTS_PER_DIRECTION
@@ -113,12 +113,15 @@ class HopDiffusion(Simulation):
         for i in range(self.n_particles):
             self.update_path(i)
 
-    def init_particles(self) -> set[tuple[float, float]]:
+    def init_particles(self, spawn_in_center:bool = False) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
 
         for _ in range(self.n_particles):
             while True:
-                pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
+                if spawn_in_center:
+                    pair = (self.get_random_center_canvas_value(), self.get_random_center_canvas_value())
+                else:
+                    pair = (self.get_random_canvas_value(), self.get_random_canvas_value())
                 if not (pair in mem or self.is_particle_on_boundary(pair)):
                     break
             mem.add(pair)

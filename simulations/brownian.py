@@ -3,8 +3,8 @@ import util
 
 
 class Brownian(Simulation):
-    def __init__(self, n: int = 5):
-        super().__init__(n)
+    def __init__(self, n: int = 5, spawn_in_center: bool = False):
+        super().__init__(n, spawn_in_center)
 
     def update_path(self, idx: int):
         x_dir, y_dir = [
