@@ -42,6 +42,13 @@ class ImageManager(Simulation):
             [self.update_pixel_fluctuation_space(i, j) for j in range(N_PIXEL)]
             for i in range(N_PIXEL)
         ]
+    def calculate_pixel_fluctuation_matrix(self) -> np_t.NDArray[np.float32]: 
+        avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
+        return [
+            [0 if self.intensity_matrix[i][j] - avg < 0 
+            else self.intensity_matrix[i][j] - avg for j in range(N_PIXEL)] 
+            for i in range(N_PIXEL)
+        ]
 
     def add_pixel_fluctuation_matrix_to_images(self, new_mat) -> None:
         self.images.append( [row[:] for row in new_mat] )
@@ -89,13 +96,7 @@ class ImageManager(Simulation):
         self.trim_matrix_for_display()
         self.apply_discrete_noise_from_custom_probability_function()
         
-        #new_mat = self.update_pixel_flucuation_matrix()
-        avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
-        new_mat = [
-            [0 if self.intensity_matrix[i][j] - avg < 0 else self.intensity_matrix[i][j] - avg for j in range(N_PIXEL)] 
-            for i in range(N_PIXEL)
-        ]
-        self.add_pixel_fluctuation_matrix_to_images(new_mat)
+        self.add_pixel_fluctuation_matrix_to_images(self.calculate_pixel_fluctuation_matrix())
         self.add_intensity_matrix_to_storage()
         
         return self.intensity_matrix
