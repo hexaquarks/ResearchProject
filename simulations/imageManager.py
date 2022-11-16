@@ -7,8 +7,8 @@ N_PIXEL = 32
 WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
-CONVOLUTION_SIGMA = 3 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 500 # adjusted aesthetically
+CONVOLUTION_SIGMA = 2 # note that a larger value yields a wider spread of the intensity
+PARTICLE_INTENSITY = 1800 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -59,7 +59,13 @@ class ImageManager(Simulation):
     
     def apply_gaussian_noise(self) -> None:
         noise_delta = np.abs(np.random.normal(0, 1, self.intensity_matrix.shape))
-        #self.intensity_matrix += noise_delta
+        self.intensity_matrix += noise_delta
+    
+    def apply_discrete_noise_from_custom_probability_function(self) -> None:
+        for i in range(N_PIXEL):
+            for j in range(N_PIXEL):
+                noise_delta = np.random.choice(np.arange(0, 6), p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
+                self.intensity_matrix[i][j] += noise_delta;
         
     def trim_matrix_for_display(self) -> None: 
         val = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
@@ -80,8 +86,8 @@ class ImageManager(Simulation):
             self.intensity_matrix[y][x] += PARTICLE_INTENSITY
             
         self.apply_convolution_filter()
-        self.apply_gaussian_noise()
         self.trim_matrix_for_display()
+        self.apply_discrete_noise_from_custom_probability_function()
         
         #new_mat = self.update_pixel_flucuation_matrix()
         avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
