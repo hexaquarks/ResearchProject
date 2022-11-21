@@ -19,10 +19,14 @@ import util
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
-ANIMATION_FRAMES: int = 50
-ANIMATION_INTERVAL: int = 100
-N_PIXEL = 32
 NM_IN_BETWEEN_AXIS_TICKS = 800
+N_PIXEL = 32
+CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
+                                                    ['black','green','white'],
+                                                    256)
+
+ANIMATION_FRAMES: int = 400
+ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
     nanodomains = [
@@ -85,7 +89,7 @@ class PlotGenerator:
         ]
         matrix = self.ax[1].imshow(
             get_matrix_for_plot(self.image_manager),
-            cmap = "viridis", interpolation = "none",
+            cmap = CMAP, interpolation = "none",
             aspect = "auto", origin = "lower"
         )
         return path_plots, head_plots, matrix
