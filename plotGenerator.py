@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
                                                     ['black','green','white'],
                                                     256)
 
-ANIMATION_FRAMES: int = 200
+ANIMATION_FRAMES: int = 400
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -150,8 +150,8 @@ class PlotGenerator:
             print(frame_number)
             data = frames[frame_number] 
             plot_t[0].remove()
-            plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.jet,
-                       linewidth=1)
+            plot_t[0] = ax.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
+                       linewidth=2)
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -204,5 +204,5 @@ class PlotGenerator:
         )
 
         plt.show(block = False) # type: ignore
-        plt.pause(10)
+        plt.pause(50)
         self.fig.tight_layout()
