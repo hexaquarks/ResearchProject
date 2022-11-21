@@ -8,7 +8,7 @@ WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
 CONVOLUTION_SIGMA = 2 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 1000 # adjusted aesthetically
+PARTICLE_INTENSITY = 3000 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -73,7 +73,7 @@ class ImageManager(Simulation):
     
     def generate_random_background(self) -> np_t.NDArray[np.float32]:
         return [
-            [np.random.choice(np.arange(0, 6)*30, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02]) 
+            [np.random.choice(np.arange(0, 6)*100, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02]) 
              for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)]
             for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)
         ]
@@ -81,7 +81,7 @@ class ImageManager(Simulation):
     def apply_discrete_noise_from_custom_probability_function(self) -> None:
         for i in range(len(self.intensity_matrix)):
             for j in range(len(self.intensity_matrix)):
-                noise_delta = np.random.choice(np.arange(0, 6), p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
+                noise_delta = np.random.choice(np.arange(0, 6)*5, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
                 self.intensity_matrix[i][j] += noise_delta
     
     def apply_background_matrix(self) -> None:
