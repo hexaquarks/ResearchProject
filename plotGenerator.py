@@ -89,7 +89,7 @@ class PlotGenerator:
         ]
         matrix = self.ax[1].imshow(
             get_matrix_for_plot(self.image_manager),
-            cmap = CMAP, interpolation = "none",
+            cmap = CMAP, interpolation = "gaussian",
             aspect = "auto", origin = "lower"
         )
         return path_plots, head_plots, matrix
