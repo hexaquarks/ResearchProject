@@ -8,7 +8,7 @@ WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
 CONVOLUTION_SIGMA = 2 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 1800 # adjusted aesthetically
+PARTICLE_INTENSITY = 1000 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
@@ -18,6 +18,7 @@ class ImageManager(Simulation):
         
         self.intensity_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
+        self.image_background: np_t.NDArray[np.float32] = self.generate_random_background()
         
         self.image_counter = 0;
          
@@ -62,18 +63,32 @@ class ImageManager(Simulation):
         return x < 0 or x >= max_index or y < 0 or y >= max_index
     
     def apply_convolution_filter(self) -> None:
-        self.intensity_matrix = gaussian_filter(self.intensity_matrix, sigma = CONVOLUTION_SIGMA) 
+        self.intensity_matrix = gaussian_filter(
+            self.intensity_matrix, 
+            sigma = CONVOLUTION_SIGMA) 
     
     def apply_gaussian_noise(self) -> None:
         noise_delta = np.abs(np.random.normal(0, 1, self.intensity_matrix.shape))
         self.intensity_matrix += noise_delta
     
-    def apply_discrete_noise_from_custom_probability_function(self) -> None:
-        for i in range(N_PIXEL):
-            for j in range(N_PIXEL):
-                noise_delta = np.random.choice(np.arange(0, 6), p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
-                self.intensity_matrix[i][j] += noise_delta;
+    def generate_random_background(self) -> np_t.NDArray[np.float32]:
+        return [
+            [np.random.choice(np.arange(0, 6)*30, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02]) 
+             for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)]
+            for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)
+        ]
         
+    def apply_discrete_noise_from_custom_probability_function(self) -> None:
+        for i in range(len(self.intensity_matrix)):
+            for j in range(len(self.intensity_matrix)):
+                noise_delta = np.random.choice(np.arange(0, 6), p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
+                self.intensity_matrix[i][j] += noise_delta
+    
+    def apply_background_matrix(self) -> None:
+        for i in range(len(self.intensity_matrix)):
+            for j in range(len(self.intensity_matrix)):
+                self.intensity_matrix[i][j] += self.image_background[i][j]
+                
     def trim_matrix_for_display(self) -> None: 
         val = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
         self.intensity_matrix = self.intensity_matrix[val:-val, val:-val]
@@ -92,6 +107,7 @@ class ImageManager(Simulation):
             if (self.is_out_of_extended_bounds((x, y))): continue
             self.intensity_matrix[y][x] += PARTICLE_INTENSITY
             
+        self.apply_background_matrix()
         self.apply_convolution_filter()
         self.trim_matrix_for_display()
         self.apply_discrete_noise_from_custom_probability_function()
