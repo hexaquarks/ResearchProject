@@ -13,12 +13,12 @@ def main() -> None:
     #brownian = Brownian(6)
     #nanoDomain = Nanodomain(6)
     
-    hopDiffusion = HopDiffusion(6);
+    hopDiffusion = HopDiffusion(10, True);
     image_manager = ImageManager(hopDiffusion)
     
     plotGenerator = PlotGenerator(hopDiffusion, image_manager)
     plotGenerator.start_animation()
-    # plotGenerator.initialize_space_correlation_manager()
+    plotGenerator.initialize_space_correlation_manager()
 
 if __name__ == '__main__':
     main()

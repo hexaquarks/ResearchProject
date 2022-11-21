@@ -16,7 +16,7 @@ import matplotlib.ticker as ticker
 from simulations.spaceCorrelationManager import SpaceCorrelationManager
 import util
 
-path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c')
+path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c', 'tan', 'lime', 'brown', 'navy')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
 NM_IN_BETWEEN_AXIS_TICKS = 800
@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
                                                     ['black','green','white'],
                                                     256)
 
-ANIMATION_FRAMES: int = 400
+ANIMATION_FRAMES: int = 200
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -66,7 +66,7 @@ class PlotGenerator:
         self.sim = sim
         self.image_manager = image_manager
 
-        path_colors = [
+        self.path_colors = [
             colors.to_hex(util.get_random_gray_shade()) for _ in range(sim.n_particles)
         ]
         self.path_plots, self.head_plots, self.matrix = self.generate_figure_elements()
@@ -77,14 +77,14 @@ class PlotGenerator:
         path_plots = [
             self.ax[0].plot(
                 *get_coordinates_for_plot(self.sim, i),
-                markersize=15, color = path_colors2[i])[0]
+                markersize=15, color = self.path_colors[i])[0]
             for i in range(self.sim.n_particles)
         ]
         head_plots = [
             self.ax[0].plot(
                 *get_coordinates_for_heads(self.sim, i),
-                markersize=7, color = path_colors2[i], marker = 'o',
-                markerfacecolor="white")[0]
+                markersize=9, color = self.path_colors[i], marker = 'o',
+                markerfacecolor="black")[0]
             for i in range(self.sim.n_particles)
         ]
         matrix = self.ax[1].imshow(
@@ -134,21 +134,23 @@ class PlotGenerator:
         frames = spc_manger.get_frame()
         
         fig= plt.figure(figsize = [6, 5], dpi = DPI) # type: ignore
-        ax = fig.add_subplot(1, 1, 1, projection='3d')
-        nx, ny = len(frames[0]), len(frames[0][0])
-        print(nx)
-        print(ny)
-        x, y = range(nx), range(ny)
-        data = frames[0]    
-        X, Y = np.meshgrid(x, y)  # `plot_surface` expects `x` and `y` data to be 2D
         
-        plot_t = [ax.plot_surface(X, Y, data, cmap=cm.Spectral,
-                       linewidth=1)]
+        ax = fig.add_subplot(1, 1, 1, projection='3d')
+        ax.set_zlim(0, 400)
+
+        data = frames[0]    
+        X, Y = np.meshgrid(
+            range(len(frames[0])),
+            range(len(frames[0][0]))
+        )  
+        plot_t = [ax.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
+                       linewidth=2)]
         
         def update_STICS_animation(frame_number):
+            print(frame_number)
             data = frames[frame_number] 
             plot_t[0].remove()
-            plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.Spectral,
+            plot_t[0] = ax.plot_surface(X, Y, data, cmap=cm.jet,
                        linewidth=1)
             return frames
         
@@ -159,7 +161,7 @@ class PlotGenerator:
             func = update_STICS_animation,
             init_func = initialize_STICS_animation,
             interval = ANIMATION_INTERVAL,
-            frames = ANIMATION_FRAMES - ANIMATION_INTERVAL,
+            frames = ANIMATION_FRAMES,
             repeat = False
         )
         plt.show(block = True) # type: ignore
@@ -175,7 +177,8 @@ class PlotGenerator:
         if frame_number + 1 == ANIMATION_FRAMES: 
             util.export_images_to_tiff(self.image_manager.intensity_matrices)
             util.export_images_to_text()
-            plt.close(self.fig)
+            #plt.close(self.fig)
+            #self.initialize_space_correlation_manager()
             
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
@@ -200,9 +203,6 @@ class PlotGenerator:
             repeat = False
         )
 
-        plt.show(block = True) # type: ignore
-        #plt.pause(2)
+        plt.show(block = False) # type: ignore
+        plt.pause(10)
         self.fig.tight_layout()
-        
-        
-        
