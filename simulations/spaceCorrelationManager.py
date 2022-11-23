@@ -7,7 +7,7 @@ from numpy import fft as fft
 
 class SpaceCorrelationManager(ImageManager):
     def __init__(self, image_manager: ImageManager) -> None:
-        self.images: list[np_t.NDArray[np.float32]] = image_manager.intensity_matrices
+        self.images: list[np_t.NDArray[np.float32]] = image_manager.images_without_background
         self.corr_function_frames: list[np_t.NDArray[np.float32]] = self.get_frames()
         
     @property

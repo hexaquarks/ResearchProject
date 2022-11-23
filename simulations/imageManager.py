@@ -8,17 +8,19 @@ WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
 NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
 CONVOLUTION_SIGMA = 2 # note that a larger value yields a wider spread of the intensity
-PARTICLE_INTENSITY = 3000 # adjusted aesthetically
+PARTICLE_INTENSITY = 500 # adjusted aesthetically
 
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
         self.images: list[np_t.NDArray[np.float32]] = []
         self.intensity_matrices: list[np_t.NDArray[np.float32]] = []
+        self.images_without_background: list[np_t.NDArray[np.float32]] = []
         
         self.intensity_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         self.image_background: np_t.NDArray[np.float32] = self.generate_random_background()
+        self.image_without_background: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
         
         self.image_counter = 0;
          
@@ -55,6 +57,7 @@ class ImageManager(Simulation):
         self.images.append( [row[:] for row in new_mat] )
     
     def add_intensity_matrix_to_storage(self) -> None:
+        self.images_without_background.append( [row[:] for row in (self.image_without_background)] )
         self.intensity_matrices.append( [row[:] for row in self.intensity_matrix] )
         
     def is_out_of_extended_bounds(self, pos: tuple[int, int]) -> bool:
@@ -66,6 +69,10 @@ class ImageManager(Simulation):
         self.intensity_matrix = gaussian_filter(
             self.intensity_matrix, 
             sigma = CONVOLUTION_SIGMA) 
+        
+        self.image_without_background = gaussian_filter(
+            self.image_without_background, 
+            sigma = CONVOLUTION_SIGMA) 
     
     def apply_gaussian_noise(self) -> None:
         noise_delta = np.abs(np.random.normal(0, 1, self.intensity_matrix.shape))
@@ -73,7 +80,7 @@ class ImageManager(Simulation):
     
     def generate_random_background(self) -> np_t.NDArray[np.float32]:
         return [
-            [np.random.choice(np.arange(0, 6)*100, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02]) 
+            [np.random.choice(np.arange(0, 6)*125, p=[0.85, 0.03, 0.03, 0.03, 0.03, 0.03]) 
              for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)]
             for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)
         ]
@@ -83,6 +90,7 @@ class ImageManager(Simulation):
             for j in range(len(self.intensity_matrix)):
                 noise_delta = np.random.choice(np.arange(0, 6)*5, p=[0.9, 0.02, 0.02, 0.02, 0.02, 0.02])
                 self.intensity_matrix[i][j] += noise_delta
+                self.image_without_background[i][j] += noise_delta
     
     def apply_background_matrix(self) -> None:
         for i in range(len(self.intensity_matrix)):
@@ -92,6 +100,7 @@ class ImageManager(Simulation):
     def trim_matrix_for_display(self) -> None: 
         val = NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
         self.intensity_matrix = self.intensity_matrix[val:-val, val:-val]
+        self.image_without_background = self.image_without_background[val:-val, val:-val]
         
     def get_pixel_coord(self, x: float) -> int:
         return int(x // VOXEL_SIZE) + NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
@@ -100,12 +109,15 @@ class ImageManager(Simulation):
         # quick fix
         if (len(self.intensity_matrix) != N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND): 
             self.intensity_matrix = self.reset_local_matrix(True)
+        if (len(self.image_without_background) != N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND): 
+            self.image_without_background = self.reset_local_matrix(True)
         
         for i in range(self.sim.n_particles):
             x, y = self.sim.get_last_particle_coordinate(i)
             x, y = self.get_pixel_coord(x + RADIUS), self.get_pixel_coord(y + RADIUS)
             if (self.is_out_of_extended_bounds((x, y))): continue
             self.intensity_matrix[y][x] += PARTICLE_INTENSITY
+            self.image_without_background[y][x] += PARTICLE_INTENSITY
             
         self.apply_background_matrix()
         self.apply_convolution_filter()
