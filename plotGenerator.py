@@ -23,9 +23,9 @@ NM_IN_BETWEEN_AXIS_TICKS = 800
 N_PIXEL = 32
 CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
                                                     ['black','green','white'],
-                                                    64)
+                                                    128)
 
-ANIMATION_FRAMES: int = 100
+ANIMATION_FRAMES: int = 200
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -141,6 +141,25 @@ class PlotGenerator:
             polyfit_linspace,
             polyfit_function(polyfit_linspace), 'r--'
         )
+        ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
+        ax.set_ylabel(r"$G(0, 0, \tau)$", fontsize = 14)
+        formatted_ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * TIME_PER_FRAME))
+        ax.xaxis.set_major_formatter(formatted_ticks)
+        ax.patch.set_edgecolor('black')
+        ax.patch.set_linewidth(2)
+        ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
+        ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
+        
+    
+    def show_STICS_plot(self, ax, x, y, data) -> list[plt.Axes]:
+        plot = [ax.plot_trisurf(x.flatten(), y.flatten(), data.flatten(), cmap=cm.jet,
+                       linewidth = 0.75, edgecolor='black')]
+        ax.set_xlabel(r"$\zeta$", fontsize = 14)
+        ax.set_ylabel(r"$\eta$", fontsize = 14)
+        ax.grid(False)
+        ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
+        ax.set_axis_off()
+        return plot
         
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
@@ -158,15 +177,17 @@ class PlotGenerator:
             range(len(frames[0])),
             range(len(frames[0][0]))
         )  
-        plot_corr = [ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
-                       linewidth = 2)]
+        plot_corr = self.show_STICS_plot(ax1, X, Y, data)
         self.show_peak_decay_plots(ax2, peak_decay_list)
         
-        def update_STICS_animation(frame_number):  
+        def update_STICS_animation(frame_number): 
+            print(frame_number) 
             data = frames[frame_number] 
             plot_corr[0].remove()
-            plot_corr[0] = ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
-                       linewidth = 2)
+            plot_corr[0] = self.show_STICS_plot(ax1, X, Y, data)[0]
+                
+            if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
+                fig.savefig(fname=f"data/figures/figSTICSHop_{frame_number}.png")
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -188,9 +209,10 @@ class PlotGenerator:
         return self.path_plots
 
     def update_animation(self, frame_number):
+        print(frame_number)
         if frame_number + 1 == ANIMATION_FRAMES: 
             self.spc_manager = SpaceCorrelationManager(self.image_manager)
-            util.export_images_to_tiff(self.image_manager.intensity_matrices)
+            #util.export_images_to_tiff(self.image_manager.images_without_background)
             
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
@@ -202,6 +224,9 @@ class PlotGenerator:
             
         self.matrix.set_data(get_matrix_for_plot(self.image_manager))
         self.image_manager.increment_image_counter()
+        
+        if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
+            self.fig.savefig(fname=f"data/figures/figNormalHop_{frame_number}.png")
         
         return self.path_plots
 
