@@ -5,7 +5,7 @@ BOUNDARY_THICKNESS: int = 100
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
 BOUNDARY_JUMP: int = BOUNDARY_THICKNESS
 BOUNDARY_OVERFLOW: int = 140
-HOP_PROBABILITY_PERCENTAGE: float = 0.15
+HOP_PROBABILITY_PERCENTAGE: float = 0.05
 
 
 class HopDiffusion(Simulation):
@@ -112,6 +112,7 @@ class HopDiffusion(Simulation):
     def update(self) -> None:
         for i in range(self.n_particles):
             self.update_path(i)
+            self.trim_paths(i)
 
     def init_particles(self, spawn_in_center:bool = False) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()

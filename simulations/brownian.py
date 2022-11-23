@@ -17,3 +17,4 @@ class Brownian(Simulation):
     def update(self) -> None:
         for i in range(self.n_particles):
             self.update_path(i)
+            self.trim_paths(i)

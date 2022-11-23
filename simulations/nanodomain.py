@@ -1,7 +1,7 @@
 from simulations.simulation import *
 import util
 
-NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECTED * 0.4 # type : ignore
+NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECTED * 0.3 # type : ignore
 
 
 class Nanodomain(Simulation):
@@ -38,3 +38,4 @@ class Nanodomain(Simulation):
     def update(self) -> None:
         for i in range(self.n_particles):
             self.update_path(i)
+            self.trim_paths(i)

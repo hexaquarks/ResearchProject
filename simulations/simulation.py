@@ -5,6 +5,7 @@ DPI = 100
 RADIUS_PADDING = 20
 RADIUS = 1600
 CORRECTED_CANVAS_RADIUS = RADIUS - RADIUS_PADDING
+PATH_LIMIT = 20
 
 TIME_PER_FRAME: float = 0.05 # 50 ms
 DIFFUSION_SPEED_CORRECTION: int = 1 # arbitrary
@@ -30,7 +31,7 @@ class Simulation:
     
     @staticmethod
     def get_random_center_canvas_value() -> int:
-        return int(random.randint(-500, 500))  
+        return int(random.randint(-400, 400))  
     
     def init_particles(self, spawn_in_center: bool = False) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
@@ -45,6 +46,9 @@ class Simulation:
             mem.add(pair)
 
         return mem
+    
+    def trim_paths(self, idx: int):
+        if (len(self.paths[idx]) >= PATH_LIMIT): self.paths[idx] = self.paths[idx][-PATH_LIMIT:]
 
     def update(self) -> None:
         """Abstract class"""
