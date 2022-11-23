@@ -8,7 +8,12 @@ from numpy import fft as fft
 class SpaceCorrelationManager(ImageManager):
     def __init__(self, image_manager: ImageManager) -> None:
         self.images: list[np_t.NDArray[np.float32]] = image_manager.intensity_matrices
-
+        self.corr_function_frames: list[np_t.NDArray[np.float32]] = self.get_frames()
+        
+    @property
+    def get_corr_function_frames(self):
+        return self.corr_function_frames
+    
     def correlate(
         self,
         im1: np_t.NDArray[np.float32],
@@ -41,13 +46,12 @@ class SpaceCorrelationManager(ImageManager):
 
         return frame
 
-    def get_frame(self) -> list[np_t.NDArray[np.float32]]:
+    def get_frames(self) -> list[np_t.NDArray[np.float32]]:
         fft_images = []
 
         for image in self.images:
-            normalization_factor = (np.mean(image) * len(image) ** 2)
-            fft_images.append(
-                    fft.irfft2(
+            normalization_factor = ((np.mean(image) * len(image)) ** 2)
+            image = fft.irfft2(
                         np.real(
                             np.matmul(
                                 fft.fft2(image),
@@ -56,7 +60,12 @@ class SpaceCorrelationManager(ImageManager):
                                 )
                             )
                         ), 
-                        s=(32, 32)
-                    ) / normalization_factor - 1
-            )
+                        s = (N_PIXEL, N_PIXEL)
+            ) / normalization_factor - 1
+            fft_images.append(image)
+            
         return fft_images
+    
+    def get_peak_decay_list(self) -> list[float]:
+        return [image.max() for image in self.corr_function_frames]
+        

@@ -23,9 +23,9 @@ NM_IN_BETWEEN_AXIS_TICKS = 800
 N_PIXEL = 32
 CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
                                                     ['black','green','white'],
-                                                    256)
+                                                    64)
 
-ANIMATION_FRAMES: int = 400
+ANIMATION_FRAMES: int = 100
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -65,6 +65,7 @@ class PlotGenerator:
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
         self.sim = sim
         self.image_manager = image_manager
+        self.spc_manager = None 
 
         self.path_colors = [
             colors.to_hex(util.get_random_gray_shade()) for _ in range(sim.n_particles)
@@ -130,28 +131,34 @@ class PlotGenerator:
 
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
-        spc_manger = SpaceCorrelationManager(self.image_manager)
-        frames = spc_manger.get_frame()
+        frames = self.spc_manager.get_corr_function_frames
+        peak_decay_list = self.spc_manager.get_peak_decay_list()
         
-        fig= plt.figure(figsize = [6, 5], dpi = DPI) # type: ignore
+        fig = plt.figure(figsize = [10, 5], dpi = DPI) # type: ignore
         
-        ax = fig.add_subplot(1, 1, 1, projection='3d')
-        ax.set_zlim(0, 400)
+        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+        ax2 = fig.add_subplot(1, 2, 2)
+        ax1.set_zlim(0, 7)
 
         data = frames[0]    
         X, Y = np.meshgrid(
             range(len(frames[0])),
             range(len(frames[0][0]))
         )  
-        plot_t = [ax.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
+        plot_corr = [ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
                        linewidth=2)]
+        plot_decay = [ax2.plot(
+            np.arange(0,len(peak_decay_list), 1), peak_decay_list, 'go--', linewidth = 2
+        )]
         
-        def update_STICS_animation(frame_number):
-            print(frame_number)
+        def update_STICS_animation(frame_number):  
             data = frames[frame_number] 
-            plot_t[0].remove()
-            plot_t[0] = ax.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
+            plot_corr[0].remove()
+            plot_corr[0] = ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
                        linewidth=2)
+            plot_decay[0] = ax2.plot(
+                np.arange(0,len(peak_decay_list), 1), peak_decay_list, 'go--', linewidth = 2
+            )
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -164,7 +171,8 @@ class PlotGenerator:
             frames = ANIMATION_FRAMES,
             repeat = False
         )
-        plt.show(block = True) # type: ignore
+        plt.show() # type: ignore
+        #plt.pause(5)
         
         
     def initialize_animation(self):
@@ -175,10 +183,10 @@ class PlotGenerator:
 
     def update_animation(self, frame_number):
         if frame_number + 1 == ANIMATION_FRAMES: 
+            self.spc_manager = SpaceCorrelationManager(self.image_manager)
+            
             util.export_images_to_tiff(self.image_manager.intensity_matrices)
-            util.export_images_to_text()
-            #plt.close(self.fig)
-            #self.initialize_space_correlation_manager()
+            #util.export_images_to_text()
             
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
@@ -203,6 +211,6 @@ class PlotGenerator:
             repeat = False
         )
 
-        plt.show(block = False) # type: ignore
-        plt.pause(50)
+        plt.show() # type: ignore
+        #plt.pause(5)
         self.fig.tight_layout()
