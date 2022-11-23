@@ -13,7 +13,7 @@ def main() -> None:
     #brownian = Brownian(6)
     #nanoDomain = Nanodomain(6)
     
-    hopDiffusion = HopDiffusion(10, True);
+    hopDiffusion = HopDiffusion(15, True);
     image_manager = ImageManager(hopDiffusion)
     
     plotGenerator = PlotGenerator(hopDiffusion, image_manager)

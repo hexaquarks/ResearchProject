@@ -5,7 +5,7 @@ BOUNDARY_THICKNESS: int = 100
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
 BOUNDARY_JUMP: int = BOUNDARY_THICKNESS
 BOUNDARY_OVERFLOW: int = 140
-HOP_PROBABILITY_PERCENTAGE: float = 0.0
+HOP_PROBABILITY_PERCENTAGE: float = 0.15
 
 
 class HopDiffusion(Simulation):
@@ -21,7 +21,7 @@ class HopDiffusion(Simulation):
         for i in range(6):
             dynamic_step = step
             if i % 3 == 0: continue
-            if i == 2 or i == 5: dynamic_step = step * 1.25
+            if i == 2 or i == 5: dynamic_step = step * 1.05
             
             horizontal = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
             curr = i * dynamic_step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * dynamic_step

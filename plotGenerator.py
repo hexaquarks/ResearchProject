@@ -129,6 +129,19 @@ class PlotGenerator:
         self.ax[0].set_xlim(-RADIUS, RADIUS)
         self.ax[0].set_ylim(-RADIUS, RADIUS)
 
+    def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list):
+        n_peaks = len(peak_decay_list)
+        scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
+        
+        polyfit_function = np.poly1d(np.polyfit(scatter_plot_frame_numbers, peak_decay_list, 3))
+        polyfit_linspace = np.linspace(0, n_peaks, 50)
+        ax.plot(
+            scatter_plot_frame_numbers,
+            peak_decay_list, 'ko', 
+            polyfit_linspace,
+            polyfit_function(polyfit_linspace), 'r--'
+        )
+        
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
         frames = self.spc_manager.get_corr_function_frames
@@ -138,7 +151,7 @@ class PlotGenerator:
         
         ax1 = fig.add_subplot(1, 2, 1, projection='3d')
         ax2 = fig.add_subplot(1, 2, 2)
-        ax1.set_zlim(0, 7)
+        ax1.set_zlim(0, max(peak_decay_list) + 2)
 
         data = frames[0]    
         X, Y = np.meshgrid(
@@ -146,19 +159,14 @@ class PlotGenerator:
             range(len(frames[0][0]))
         )  
         plot_corr = [ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
-                       linewidth=2)]
-        plot_decay = [ax2.plot(
-            np.arange(0,len(peak_decay_list), 1), peak_decay_list, 'go--', linewidth = 2
-        )]
+                       linewidth = 2)]
+        self.show_peak_decay_plots(ax2, peak_decay_list)
         
         def update_STICS_animation(frame_number):  
             data = frames[frame_number] 
             plot_corr[0].remove()
             plot_corr[0] = ax1.plot_trisurf(X.flatten(), Y.flatten(), data.flatten(), cmap=cm.jet,
-                       linewidth=2)
-            plot_decay[0] = ax2.plot(
-                np.arange(0,len(peak_decay_list), 1), peak_decay_list, 'go--', linewidth = 2
-            )
+                       linewidth = 2)
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -172,8 +180,6 @@ class PlotGenerator:
             repeat = False
         )
         plt.show() # type: ignore
-        #plt.pause(5)
-        
         
     def initialize_animation(self):
         self.set_plot_parameters()
@@ -184,9 +190,7 @@ class PlotGenerator:
     def update_animation(self, frame_number):
         if frame_number + 1 == ANIMATION_FRAMES: 
             self.spc_manager = SpaceCorrelationManager(self.image_manager)
-            
             util.export_images_to_tiff(self.image_manager.intensity_matrices)
-            #util.export_images_to_text()
             
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
