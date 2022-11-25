@@ -1,5 +1,6 @@
-from simulations.simulation import *
 import util
+
+from simulations.simulation import *
 
 
 class Brownian(Simulation):

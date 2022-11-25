@@ -1,5 +1,6 @@
-from simulations.simulation import *
 import util
+
+from simulations.simulation import *
 
 NANODOMAIN_DIFFUSION_FACTOR_CORRECTED: float = MEMBRANE_DIFFUSION_FACTOR_CORRECTED * 0.3 # type : ignore
 

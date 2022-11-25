@@ -1,7 +1,5 @@
 import numpy as np
 import random 
-import cv2
-import sys
 import numpy.typing as np_t
 import tifffile as tiff
 
@@ -18,6 +16,8 @@ def get_y_coordinates(path: list[tuple[float, float]]) -> list[float]:
     return list(list(zip(*path))[1])
 
 def get_random_normal_direction() -> float:
+    # a =  np.random.normal(0, 1 / 2) 
+    # if a < 0 : a = a * -1
     return np.random.normal(0, 1 / 2) 
 
 def is_point_within_bounds(
@@ -46,7 +46,7 @@ def get_random_gray_shade() -> tuple[float, float ,float, float]:
 
 def export_images_to_tiff(images: list[np_t.NDArray[np.float32]]):
     for i, image in enumerate(images):
-        filename = f'data/beads-{i + 1}-ch1.tiff'
+        filename = f'data/tiffImages/beads-{i + 1}-ch1.tiff'
         tiff.imsave(filename, image)
 
 def export_images_to_text():

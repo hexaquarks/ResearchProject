@@ -1,5 +1,6 @@
-from simulations.simulation import *
 import util
+
+from simulations.simulation import *
 
 BOUNDARY_THICKNESS: int = 100
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3

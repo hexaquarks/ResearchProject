@@ -1,5 +1,5 @@
 import numpy as np
-import numpy.typing as np_t
+
 from simulations.imageManager import *
 from scipy import signal
 from numpy import fft as fft
