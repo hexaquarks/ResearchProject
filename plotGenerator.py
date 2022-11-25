@@ -229,7 +229,7 @@ class PlotGenerator:
         print(frame_number)
         if frame_number + 1 == ANIMATION_FRAMES: 
             self.spc_manager = SpaceCorrelationManager(self.image_manager)
-            #util.export_images_to_tiff(self.image_manager.images_without_background)
+            #util.export_images_to_tiff(self.image_manager.intensity_matrices_without_background)
             
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
