@@ -4,8 +4,8 @@
 <ol type="a">
   <li>No confinement (free diffusion)</li>
   <li>Lattice of variable size (from underlying cytoskeleton of cell membrane)</li>
-  <li>Nanoscale circular domains of different diffusion coefficient</li>
+  <li>Transient diffusion in nanoscale circular domains </li>
 </ol>
 
-<img src="https://user-images.githubusercontent.com/25794626/202067361-c1047784-2d64-4c76-8a75-58c9cf232d97.png" width="600">
+<img src="https://user-images.githubusercontent.com/25794626/203656135-c8491e76-f56f-47ce-aa5d-58919e6f2aae.png" width="700">
 
