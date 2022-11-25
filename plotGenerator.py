@@ -1,4 +1,4 @@
-import matplotlib.tri as mtri
+from simulations.brownian import Brownian
 from simulations.hopDiffusion import HopDiffusion
 from simulations.nanodomain import Nanodomain
 from simulations.simulation import *
@@ -8,8 +8,7 @@ from simulations.spaceCorrelationManager import SpaceCorrelationManager
 from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
-from matplotlib import colors, projections, cm
-from mpl_toolkits.mplot3d import axes3d
+from matplotlib import colors, cm
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -21,11 +20,11 @@ markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
 NM_IN_BETWEEN_AXIS_TICKS = 800
 N_PIXEL = 32
-CMAP = colors.LinearSegmentedColormap.from_list('my_colormap',
-                                                    ['black','green','white'],
-                                                    128)
+CMAP = colors.LinearSegmentedColormap.from_list(
+    'my_colormap', ['black','green','white'], 128
+)
 
-ANIMATION_FRAMES: int = 200
+ANIMATION_FRAMES: int = 2
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -59,7 +58,7 @@ def get_coordinates_for_heads(sim, idx: int):
 
 def get_matrix_for_plot(image_manager: ImageManager):
     return image_manager.calculate_matrix()
-
+    
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
@@ -129,6 +128,18 @@ class PlotGenerator:
         self.ax[0].set_xlim(-RADIUS, RADIUS)
         self.ax[0].set_ylim(-RADIUS, RADIUS)
 
+    def save_figure_at_critical_frame_number(self, fig: plt.figure, do_save: bool, frame_number: int, isSTICS: bool):
+        fig_type_token = 'STICS' if isSTICS else 'Normal'
+        sim_type_token = ''
+        if isinstance(self.sim, Brownian): sim_type_token = 'Brownian'
+        elif isinstance(self.sim, Nanodomain): sim_type_token = 'Nanodomain'
+        elif isinstance(self.sim, HopDiffusion): sim_type_token = 'HopDiffusion'
+        
+        if not do_save: return
+        
+        file_name = f"data/figures/fig" + f"{fig_type_token}{sim_type_token}_{frame_number}.png"
+        fig.savefig(file_name)
+        
     def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list):
         n_peaks = len(peak_decay_list)
         scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
@@ -137,10 +148,17 @@ class PlotGenerator:
         polyfit_linspace = np.linspace(0, n_peaks, 50)
         ax.plot(
             scatter_plot_frame_numbers,
-            peak_decay_list, 'ko', 
-            polyfit_linspace,
-            polyfit_function(polyfit_linspace), 'r--'
+            peak_decay_list, 
+            'ko', 
+            label = 'STICS function peaks'
         )
+        ax.plot(
+            polyfit_linspace,
+            polyfit_function(polyfit_linspace), 
+            'r--',
+            label = 'polynomial fit'
+        )
+        ax.legend(loc = 'upper right')
         ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
         ax.set_ylabel(r"$G(0, 0, \tau)$", fontsize = 14)
         formatted_ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * TIME_PER_FRAME))
@@ -157,8 +175,8 @@ class PlotGenerator:
         ax.set_xlabel(r"$\zeta$", fontsize = 14)
         ax.set_ylabel(r"$\eta$", fontsize = 14)
         ax.grid(False)
-        ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
-        ax.set_axis_off()
+        #ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
+        #ax.set_axis_off()
         return plot
         
     def initialize_space_correlation_manager(self) -> None:
@@ -181,13 +199,12 @@ class PlotGenerator:
         self.show_peak_decay_plots(ax2, peak_decay_list)
         
         def update_STICS_animation(frame_number): 
-            print(frame_number) 
             data = frames[frame_number] 
             plot_corr[0].remove()
             plot_corr[0] = self.show_STICS_plot(ax1, X, Y, data)[0]
                 
             if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-                fig.savefig(fname=f"data/figures/figSTICSHop_{frame_number}.png")
+                self.save_figure_at_critical_frame_number(fig, False, frame_number, True)
             return frames
         
         def initialize_STICS_animation(): return frames
@@ -226,7 +243,7 @@ class PlotGenerator:
         self.image_manager.increment_image_counter()
         
         if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-            self.fig.savefig(fname=f"data/figures/figNormalHop_{frame_number}.png")
+            self.save_figure_at_critical_frame_number(self.fig, False, frame_number, False)
         
         return self.path_plots
 
@@ -241,5 +258,4 @@ class PlotGenerator:
         )
 
         plt.show() # type: ignore
-        #plt.pause(5)
         self.fig.tight_layout()
