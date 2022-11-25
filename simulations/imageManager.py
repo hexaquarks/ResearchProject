@@ -10,17 +10,19 @@ NUMBER_OF_COLS_OR_ROWS_TO_EXTEND = 14 # arbitrary
 CONVOLUTION_SIGMA = 2 # note that a larger value yields a wider spread of the intensity
 PARTICLE_INTENSITY = 500 # adjusted aesthetically
 
+FloatMatrix = np_t.NDArray[np.float32]
+
 class ImageManager(Simulation):
     def __init__(self, sim: Simulation) -> None:
         self.sim = sim
-        self.images: list[np_t.NDArray[np.float32]] = []
-        self.intensity_matrices: list[np_t.NDArray[np.float32]] = []
-        self.images_without_background: list[np_t.NDArray[np.float32]] = []
+        self.images: list[FloatMatrix] = []
+        self.intensity_matrices: list[FloatMatrix] = []
+        self.images_without_background: list[FloatMatrix] = []
         
-        self.intensity_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
-        self.pixel_fluctuation_matrix: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
-        self.image_background: np_t.NDArray[np.float32] = self.generate_random_background()
-        self.image_without_background: np_t.NDArray[np.float32] = self.reset_local_matrix(False)
+        self.intensity_matrix: FloatMatrix = self.reset_local_matrix(False)
+        self.pixel_fluctuation_matrix: FloatMatrix = self.reset_local_matrix(False)
+        self.image_background: FloatMatrix = self.generate_random_background()
+        self.image_without_background: FloatMatrix = self.reset_local_matrix(False)
         
         self.image_counter = 0;
          
@@ -45,7 +47,7 @@ class ImageManager(Simulation):
             [self.update_pixel_fluctuation_space(i, j) for j in range(N_PIXEL)]
             for i in range(N_PIXEL)
         ]
-    def calculate_pixel_fluctuation_matrix(self) -> np_t.NDArray[np.float32]: 
+    def calculate_pixel_fluctuation_matrix(self) -> FloatMatrix: 
         avg = self.intensity_matrix.sum() / len(self.intensity_matrix) ** 2
         return [
             [0 if self.intensity_matrix[i][j] - avg < 0 
@@ -78,7 +80,7 @@ class ImageManager(Simulation):
         noise_delta = np.abs(np.random.normal(0, 1, self.intensity_matrix.shape))
         self.intensity_matrix += noise_delta
     
-    def generate_random_background(self) -> np_t.NDArray[np.float32]:
+    def generate_random_background(self) -> FloatMatrix:
         return [
             [np.random.choice(np.arange(0, 6)*125, p=[0.85, 0.03, 0.03, 0.03, 0.03, 0.03]) 
              for _ in range(N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND)]
@@ -105,7 +107,7 @@ class ImageManager(Simulation):
     def get_pixel_coord(self, x: float) -> int:
         return int(x // VOXEL_SIZE) + NUMBER_OF_COLS_OR_ROWS_TO_EXTEND
     
-    def calculate_matrix(self) -> np_t.NDArray[np.float32]:
+    def calculate_matrix(self) -> FloatMatrix:
         # quick fix
         if (len(self.intensity_matrix) != N_PIXEL + 2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND): 
             self.intensity_matrix = self.reset_local_matrix(True)
@@ -129,9 +131,9 @@ class ImageManager(Simulation):
         
         return self.intensity_matrix
     
-    def reset_local_matrix(self, is_extended: bool) -> np_t.NDArray[np.float32]:
+    def reset_local_matrix(self, is_extended: bool) -> FloatMatrix:
         _range = N_PIXEL + (2 * NUMBER_OF_COLS_OR_ROWS_TO_EXTEND if is_extended else 0)
-        matrix: np_t.NDArray[np.float32] = np.array([
+        matrix: FloatMatrix = np.array([
                 [0. for _ in range(_range)] 
                 for _ in range(_range)
             ], 

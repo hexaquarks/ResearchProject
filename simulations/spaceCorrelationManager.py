@@ -7,8 +7,8 @@ from numpy import fft as fft
 
 class SpaceCorrelationManager(ImageManager):
     def __init__(self, image_manager: ImageManager) -> None:
-        self.images: list[np_t.NDArray[np.float32]] = image_manager.images_without_background
-        self.corr_function_frames: list[np_t.NDArray[np.float32]] = self.get_frames()
+        self.images: list[FloatMatrix] = image_manager.images_without_background
+        self.corr_function_frames: list[FloatMatrix] = self.get_frames()
         
     @property
     def get_corr_function_frames(self):
@@ -16,9 +16,9 @@ class SpaceCorrelationManager(ImageManager):
     
     def correlate(
         self,
-        im1: np_t.NDArray[np.float32],
-        im2: np_t.NDArray[np.float32]
-    ) -> np_t.NDArray[np.float32]: return signal.correlate2d(im1, im2)
+        im1: FloatMatrix,
+        im2: FloatMatrix
+    ) -> FloatMatrix: return signal.correlate2d(im1, im2)
 
     def compute_average(self, matrices):
         return [
@@ -27,7 +27,7 @@ class SpaceCorrelationManager(ImageManager):
             for i in range(len(matrices[0]))
         ]
 
-    def get_frame_bruteforce(self) -> list[np_t.NDArray[np.float32]]:
+    def get_frame_bruteforce(self) -> list[FloatMatrix]:
         frame = []
         shift: int = 0
         to_iterate = len(self.images)
@@ -46,7 +46,7 @@ class SpaceCorrelationManager(ImageManager):
 
         return frame
 
-    def get_frames(self) -> list[np_t.NDArray[np.float32]]:
+    def get_frames(self) -> list[FloatMatrix]:
         fft_images = []
 
         for image in self.images:

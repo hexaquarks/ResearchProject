@@ -31,7 +31,7 @@ class Simulation:
     
     @staticmethod
     def get_random_center_canvas_value() -> int:
-        return int(random.randint(-400, 400))  
+        return int(random.randint(-300, 300))  
     
     def init_particles(self, spawn_in_center: bool = False) -> set[tuple[float, float]]:
         mem: set[tuple[float, float]] = set()
