@@ -1,22 +1,22 @@
-from simulations.simulation import *
-from simulations.brownian import *
-from simulations.nanodomain import *    
-from simulations.hopDiffusion import *    
-from simulations.imageManager import *  
+from simulations.simulation import Simulation
+from simulations.brownian import Brownian
+from simulations.nanodomain import Nanodomain
+from simulations.hopDiffusion import HopDiffusion   
+from simulations.imageManager import ImageManager
 
 from matplotlib import rcParams # type: ignore
-from plotGenerator import *
+from plotGenerator import PlotGenerator
 from util import *
 
 def main() -> None:
     rcParams.update({'figure.autolayout': True})
-    #brownian = Brownian(6)
-    #nanoDomain = Nanodomain(6)
+    brownian = Brownian(15, True)
+    #nanoDomain = Nanodomain(15, True)
     
-    hopDiffusion = HopDiffusion(15, True);
-    image_manager = ImageManager(hopDiffusion)
+    #hopDiffusion = HopDiffusion(15, True);
+    image_manager = ImageManager(brownian)
     
-    plotGenerator = PlotGenerator(hopDiffusion, image_manager)
+    plotGenerator = PlotGenerator(brownian, image_manager)
     plotGenerator.start_animation()
     plotGenerator.initialize_space_correlation_manager()
 

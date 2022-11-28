@@ -12,7 +12,7 @@ from matplotlib import colors, cm
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from simulations.spaceCorrelationManager import SpaceCorrelationManager
+import numpy as np
 import util
 
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c', 'tan', 'lime', 'brown', 'navy')

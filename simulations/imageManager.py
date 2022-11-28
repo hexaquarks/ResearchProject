@@ -4,6 +4,12 @@ import numpy.typing as np_t
 from simulations.simulation import *
 from scipy.ndimage import gaussian_filter
 
+__all__ = (
+    "N_PIXEL",
+    "ImageManager",
+    "FloatMatrix"
+)
+
 N_PIXEL = 32
 WIDTH = 2 * RADIUS
 VOXEL_SIZE = WIDTH / N_PIXEL # N_PIXEL x N_PIXEL voxels
