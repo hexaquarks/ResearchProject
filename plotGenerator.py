@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
 )
 
-ANIMATION_FRAMES: int = 50
+ANIMATION_FRAMES: int = 20
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -61,11 +61,14 @@ def get_matrix_for_plot(image_manager: ImageManager):
     return image_manager.calculate_matrix()
     
 def twoD_Gauss(M, amplitude,x0,y0,sigma_x,sigma_y,offset):
-        x, y = M
-        x0=float(x0)
-        y0=float(y0)
-        return offset + amplitude*np.exp(-(((x-x0)**(2)/(2*sigma_x**(2))) + ((y-y0)**(2)/(2*sigma_y**(2)))))
-    
+    x, y = M
+    x0 = float(x0)
+    y0 = float(y0)
+    return offset + amplitude * np.exp(-(((x-x0)**(2)/(2*sigma_x**(2))) + ((y-y0)**(2)/(2*sigma_y**(2)))))
+
+def hyperbolic_fit(x, amplitude, tau, offset):
+    return (amplitude / (1 + (x / tau))) + offset
+
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
@@ -153,6 +156,11 @@ class PlotGenerator:
         
         polyfit_function = np.poly1d(np.polyfit(scatter_plot_frame_numbers, peak_decay_list, 3))
         polyfit_linspace = np.linspace(0, n_peaks, 50)
+        
+        initial_guess = (peak_decay_list[0], 0.02, 0)
+        params, pcov = curve_fit(hyperbolic_fit, scatter_plot_frame_numbers, peak_decay_list, p0 = initial_guess)
+        tau = params[1]
+
         ax.plot(
             scatter_plot_frame_numbers,
             peak_decay_list, 
@@ -165,6 +173,13 @@ class PlotGenerator:
             'r--',
             label = 'polynomial fit'
         )
+        ax.plot(
+            polyfit_linspace,
+            hyperbolic_fit(polyfit_linspace, *params), 
+            'b--',
+            label = 'hyperbolic fit'
+        )
+        
         ax.legend(loc = 'upper right')
         ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
         ax.set_ylabel(r"$G(0, 0, \tau)$", fontsize = 14)
