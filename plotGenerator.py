@@ -9,6 +9,7 @@ from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
 from matplotlib import colors, cm
+from scipy.optimize import curve_fit
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -24,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
 )
 
-ANIMATION_FRAMES: int = 2
+ANIMATION_FRAMES: int = 50
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -58,6 +59,12 @@ def get_coordinates_for_heads(sim, idx: int):
 
 def get_matrix_for_plot(image_manager: ImageManager):
     return image_manager.calculate_matrix()
+    
+def twoD_Gauss(M, amplitude,x0,y0,sigma_x,sigma_y,offset):
+        x, y = M
+        x0=float(x0)
+        y0=float(y0)
+        return offset + amplitude*np.exp(-(((x-x0)**(2)/(2*sigma_x**(2))) + ((y-y0)**(2)/(2*sigma_y**(2)))))
     
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
@@ -167,8 +174,7 @@ class PlotGenerator:
         ax.patch.set_linewidth(2)
         ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
         ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
-        
-    
+
     def show_STICS_plot(self, ax, x, y, data) -> list[plt.Axes]:
         plot = [ax.plot_trisurf(x.flatten(), y.flatten(), data.flatten(), cmap=cm.jet,
                        linewidth = 0.75, edgecolor='black')]
@@ -178,17 +184,27 @@ class PlotGenerator:
         #ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
         #ax.set_axis_off()
         return plot
+    
+    def calculate_STICS_curve_fit(self, data_amplitude, x, y, data) -> float:
+        initial_guess = (data_amplitude, N_PIXEL / 2, N_PIXEL / 2, 5, 5, 0)
+        xdata = np.vstack((x.ravel(), y.ravel()))
+        
+        params, pcov = curve_fit(twoD_Gauss, xdata, data.flatten(), p0 = initial_guess)
+        # X = np.linspace(0, N_PIXEL, 100)
+        # Y = np.linspace(0, N_PIXEL, 100)
+        # values = 
+        return params[0]
         
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
         frames = self.spc_manager.get_corr_function_frames
-        peak_decay_list = self.spc_manager.get_peak_decay_list()
         
         fig = plt.figure(figsize = [10, 5], dpi = DPI) # type: ignore
         
         ax1 = fig.add_subplot(1, 2, 1, projection='3d')
         ax2 = fig.add_subplot(1, 2, 2)
-        ax1.set_zlim(0, max(peak_decay_list) + 2)
+        data_amplitude = frames[0].max()
+        ax1.set_zlim(0, data_amplitude + 2)
 
         data = frames[0]    
         X, Y = np.meshgrid(
@@ -196,15 +212,19 @@ class PlotGenerator:
             range(len(frames[0][0]))
         )  
         plot_corr = self.show_STICS_plot(ax1, X, Y, data)
-        self.show_peak_decay_plots(ax2, peak_decay_list)
         
         def update_STICS_animation(frame_number): 
             data = frames[frame_number] 
             plot_corr[0].remove()
             plot_corr[0] = self.show_STICS_plot(ax1, X, Y, data)[0]
+            amplitude = self.calculate_STICS_curve_fit(data_amplitude, X, Y, data)
+            
+            self.spc_manager.update_peak_decay_list(amplitude)
                 
             if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
                 self.save_figure_at_critical_frame_number(fig, False, frame_number, True)
+                if frame_number == ANIMATION_FRAMES - 1:
+                    self.show_peak_decay_plots(ax2, self.spc_manager.get_peak_decay_list())
             return frames
         
         def initialize_STICS_animation(): return frames
