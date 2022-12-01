@@ -4,15 +4,19 @@ from simulations.imageManager import *
 from scipy import signal
 from numpy import fft as fft
 
-
 class SpaceCorrelationManager(ImageManager):
     def __init__(self, image_manager: ImageManager) -> None:
         self.images: list[FloatMatrix] = image_manager.intensity_matrices_without_background
         self.corr_function_frames: list[FloatMatrix] = self.get_frames()
+        self.peak_decay_list: list[float] = []
         
     @property
     def get_corr_function_frames(self):
         return self.corr_function_frames
+    
+    @property
+    def get_peak_decay_list(self):
+        return self.peak_decay_list
     
     def correlate(
         self,
@@ -66,6 +70,9 @@ class SpaceCorrelationManager(ImageManager):
             
         return fft_images
     
+    def update_peak_decay_list(self, amplitude: float):
+        self.peak_decay_list.append(amplitude)
+        
     def get_peak_decay_list(self) -> list[float]:
-        return [image.max() for image in self.corr_function_frames]
+        return self.peak_decay_list
         
