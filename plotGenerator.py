@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
 )
 
-ANIMATION_FRAMES: int = 20
+ANIMATION_FRAMES: int = 10
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -68,6 +68,16 @@ def twoD_Gauss(M, amplitude,x0,y0,sigma_x,sigma_y,offset):
 
 def hyperbolic_fit(x, amplitude, tau, offset):
     return (amplitude / (1 + (x / tau))) + offset
+
+def hyperbolic_error(x, x_error, a, a_error, tau, tau_error, offset, offset_error):
+    dfdx = (-a * tau) / (tau + x) ** 2
+    dfda = tau / (tau + x)
+    dfdt = (a * x) / (tau + x) ** 2
+    dfdo = 1
+    return np.sqrt(
+        (dfdx * x_error) ** 2 + (dfda * a_error) ** 2 +\
+        (dfdt * tau_error) ** 2 + (dfdo * offset_error) ** 2
+    )
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
@@ -150,21 +160,35 @@ class PlotGenerator:
         file_name = f"data/figures/fig" + f"{fig_type_token}{sim_type_token}_{frame_number}.png"
         fig.savefig(file_name)
         
-    def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list):
+    def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list[float], peak_decay_list_error: list[float]):
         n_peaks = len(peak_decay_list)
         scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
         
         polyfit_function = np.poly1d(np.polyfit(scatter_plot_frame_numbers, peak_decay_list, 3))
         polyfit_linspace = np.linspace(0, n_peaks, 50)
         
-        initial_guess = (peak_decay_list[0], 0.02, 0)
-        params, pcov = curve_fit(hyperbolic_fit, scatter_plot_frame_numbers, peak_decay_list, p0 = initial_guess)
-        tau = params[1]
-
-        ax.plot(
-            scatter_plot_frame_numbers,
-            peak_decay_list, 
-            'ko', 
+        initial_guess = (0.02, 0)
+        popt, pcov = curve_fit(
+            lambda x, tau, offset: hyperbolic_fit(x, peak_decay_list[0], tau, offset), scatter_plot_frame_numbers, peak_decay_list, p0 = initial_guess
+        )
+        tau = popt[0]
+        tau_error = pcov[0][0] ** 0.5
+        print('tau is')
+        print(tau)
+        print('tau error is')
+        print(tau_error)
+        print('diffusion coefficient is')
+        print((400) / (4 * popt[0]))
+        print((350 * 10 ** 18) / 4 * popt[0])
+        print('or')
+        print((350 * 10 ** 18) / 4 * (popt[0] * TIME_PER_FRAME))
+        
+        ax.errorbar(
+            x = scatter_plot_frame_numbers,
+            y = peak_decay_list, 
+            xerr = np.repeat(0, (len(scatter_plot_frame_numbers))),
+            yerr = peak_decay_list_error,
+            fmt = 'ko', 
             label = 'STICS function peaks'
         )
         ax.plot(
@@ -175,7 +199,7 @@ class PlotGenerator:
         )
         ax.plot(
             polyfit_linspace,
-            hyperbolic_fit(polyfit_linspace, *params), 
+            hyperbolic_fit(polyfit_linspace, peak_decay_list[0], *popt), 
             'b--',
             label = 'hyperbolic fit'
         )
@@ -200,15 +224,18 @@ class PlotGenerator:
         #ax.set_axis_off()
         return plot
     
-    def calculate_STICS_curve_fit(self, data_amplitude, x, y, data) -> float:
+    def calculate_STICS_curve_fit(self, data_amplitude, x, y, data) -> tuple[float, float]:
         initial_guess = (data_amplitude, N_PIXEL / 2, N_PIXEL / 2, 5, 5, 0)
         xdata = np.vstack((x.ravel(), y.ravel()))
         
-        params, pcov = curve_fit(twoD_Gauss, xdata, data.flatten(), p0 = initial_guess)
-        # X = np.linspace(0, N_PIXEL, 100)
-        # Y = np.linspace(0, N_PIXEL, 100)
-        # values = 
-        return params[0]
+        popt, pcov = curve_fit(
+            twoD_Gauss, 
+            xdata, 
+            data.flatten(), 
+            p0 = initial_guess, 
+            sigma = np.repeat(5, len(data.flatten()))
+        )
+        return popt[0], (pcov[0][0] ** 0.5)
         
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
@@ -232,14 +259,18 @@ class PlotGenerator:
             data = frames[frame_number] 
             plot_corr[0].remove()
             plot_corr[0] = self.show_STICS_plot(ax1, X, Y, data)[0]
-            amplitude = self.calculate_STICS_curve_fit(data_amplitude, X, Y, data)
+            amplitude, amplitude_error = self.calculate_STICS_curve_fit(data_amplitude, X, Y, data)
             
-            self.spc_manager.update_peak_decay_list(amplitude)
+            self.spc_manager.update_peak_decay_list(amplitude, amplitude_error)
                 
             if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
                 self.save_figure_at_critical_frame_number(fig, False, frame_number, True)
                 if frame_number == ANIMATION_FRAMES - 1:
-                    self.show_peak_decay_plots(ax2, self.spc_manager.get_peak_decay_list())
+                    self.show_peak_decay_plots(
+                        ax2, 
+                        self.spc_manager.get_peak_decay_list(), 
+                        self.spc_manager.get_peak_decay_list_error()
+                    )
             return frames
         
         def initialize_STICS_animation(): return frames
