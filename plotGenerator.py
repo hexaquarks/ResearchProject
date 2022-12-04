@@ -9,7 +9,7 @@ from matplotlib.animation import FuncAnimation # type: ignore
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable # type: ignore
 from matplotlib.pyplot import figure
 from matplotlib import colors, cm
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fsolve
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
 )
 
-ANIMATION_FRAMES: int = 10
+ANIMATION_FRAMES: int = 200
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -60,11 +60,14 @@ def get_coordinates_for_heads(sim, idx: int):
 def get_matrix_for_plot(image_manager: ImageManager):
     return image_manager.calculate_matrix()
     
-def twoD_Gauss(M, amplitude,x0,y0,sigma_x,sigma_y,offset):
-    x, y = M
+def gaussian(xy, amplitude, x0, y0, sigma_x, sigma_y, offset):
+    x, y = xy
     x0 = float(x0)
     y0 = float(y0)
     return offset + amplitude * np.exp(-(((x-x0)**(2)/(2*sigma_x**(2))) + ((y-y0)**(2)/(2*sigma_y**(2)))))
+
+def decayed_gaussian(xy, amplitude, x0, y0, sigma_x, sigma_y, offset) -> float:
+    return gaussian(xy, amplitude, x0, y0, sigma_x, sigma_y, offset) - amplitude / np.exp(1)
 
 def hyperbolic_fit(x, amplitude, tau, offset):
     return (amplitude / (1 + (x / tau))) + offset
@@ -78,6 +81,23 @@ def hyperbolic_error(x, x_error, a, a_error, tau, tau_error, offset, offset_erro
         (dfdx * x_error) ** 2 + (dfda * a_error) ** 2 +\
         (dfdt * tau_error) ** 2 + (dfdo * offset_error) ** 2
     )
+
+def get_STICS_diffusion_coefficient(tau, tau_error, omega, omega_error) -> tuple[float, float]:
+    D = omega ** 2 / (4 * tau)
+    D_error = np.sqrt(((omega / ( 2 * tau)) * omega_error) ** 2 + ((-omega ** 2 / (4 * tau ** 2)) * tau_error) ** 2)
+    
+    return D, D_error
+
+def get_IMSD_radius(x0, y0, amplitude, offset, sigma_x):
+    xe = np.sqrt(-2 * np.log(1 / np.exp(1) - offset / amplitude) * sigma_x ** 2) + x0
+    ye = y0
+    return np.abs(xe - x0)
+
+def IMSD_brownian_fit_func(t, D, sigma_0_squared) -> float:
+    return 4 * D * t + sigma_0_squared
+    
+def IMSD_confined_fit_func(t, L, tau_c, D, sigma_0_squared) -> float:
+    return (L ** 2 / 3) * (1 - np.exp(- t / tau_c)) + 4 * D * t + sigma_0_squared
 
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
@@ -160,6 +180,60 @@ class PlotGenerator:
         file_name = f"data/figures/fig" + f"{fig_type_token}{sim_type_token}_{frame_number}.png"
         fig.savefig(file_name)
         
+    def IMSD_brownian_fit_func(t, D, sigma_0_squared) -> float:
+        return 4 * D * t + sigma_0_squared
+    
+    def IMSD_confined_fit_func(t, L, tau_c, D, sigma_0_squared) -> float:
+        return (L ** 2 / 3) * (1 - np.exp(- t / tau_c)) + 4 * D * t + sigma_0_squared
+
+    def show_imsd_plot(self, ax: plt.Axes , imsd_list: list[float], is_confined: bool):
+        n_peaks = len(imsd_list)
+        scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
+        fit_linspace = np.linspace(0, n_peaks, 50)
+        
+        D, D_error = 0, 0
+        
+        if is_confined:
+            initial_guess = (0.1, 1.5, 9)
+            popt, pcov = curve_fit(
+                lambda t, tau_c, D, sigma_0_squared: IMSD_confined_fit_func(t, 700, tau_c, D, sigma_0_squared),
+                scatter_plot_frame_numbers, imsd_list, p0 = initial_guess,
+                maxfev = 5000
+            )
+            D, D_error = popt[1], pcov[1][1] ** 0.5
+            print(f'D is {D} , D_error {D_error}')
+        else:
+            initial_guess = (1.5, 25)
+            popt, pcov = curve_fit(
+                IMSD_brownian_fit_func,
+                scatter_plot_frame_numbers, imsd_list, p0 = initial_guess
+            )
+            D, D_error = popt[0], pcov[0][0] ** 0.5
+            print(f'D is {D} , D_error {D_error}')
+        
+        ax.plot(
+            scatter_plot_frame_numbers,
+            imsd_list, 
+            'ko', 
+            label = 'iMSD radii'
+        )
+        ax.plot(
+            fit_linspace,
+            IMSD_confined_fit_func(fit_linspace, 700, *popt) if is_confined else IMSD_brownian_fit_func(fit_linspace, *popt), 
+            'r--',
+            label = 'Confined fit' if is_confined else 'Unconfined fit'
+        )
+            
+        ax.legend(loc = 'upper left')
+        ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
+        ax.set_ylabel(r"$\sigma_r^2(\tau)$", fontsize = 14)
+        formatted_ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * TIME_PER_FRAME))
+        ax.xaxis.set_major_formatter(formatted_ticks)
+        ax.patch.set_edgecolor('black')
+        ax.patch.set_linewidth(2)
+        ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
+        ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
+        
     def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list[float], peak_decay_list_error: list[float]):
         n_peaks = len(peak_decay_list)
         scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
@@ -173,15 +247,8 @@ class PlotGenerator:
         )
         tau = popt[0]
         tau_error = pcov[0][0] ** 0.5
-        print('tau is')
-        print(tau)
-        print('tau error is')
-        print(tau_error)
-        print('diffusion coefficient is')
-        print((400) / (4 * popt[0]))
-        print((350 * 10 ** 18) / 4 * popt[0])
-        print('or')
-        print((350 * 10 ** 18) / 4 * (popt[0] * TIME_PER_FRAME))
+        D, D_error = get_STICS_diffusion_coefficient(tau, tau_error, 350, 0)
+        print(f'D_stics is {D}, D_stics_error is {D_error}')
         
         ax.errorbar(
             x = scatter_plot_frame_numbers,
@@ -191,12 +258,12 @@ class PlotGenerator:
             fmt = 'ko', 
             label = 'STICS function peaks'
         )
-        ax.plot(
-            polyfit_linspace,
-            polyfit_function(polyfit_linspace), 
-            'r--',
-            label = 'polynomial fit'
-        )
+        # ax.plot(
+        #     polyfit_linspace,
+        #     polyfit_function(polyfit_linspace), 
+        #     'r--',
+        #     label = 'polynomial fit'
+        # )
         ax.plot(
             polyfit_linspace,
             hyperbolic_fit(polyfit_linspace, peak_decay_list[0], *popt), 
@@ -220,31 +287,42 @@ class PlotGenerator:
         ax.set_xlabel(r"$\zeta$", fontsize = 14)
         ax.set_ylabel(r"$\eta$", fontsize = 14)
         ax.grid(False)
-        #ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
-        #ax.set_axis_off()
+        ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
+        ax.set_axis_off()
         return plot
+    
+    def compute_IMSD_radius(self, popt: list):
+        amplitude, x0, y0, sigma_x, sigma_y, offset = popt
+        
+        sigma = get_IMSD_radius(x0, y0, amplitude, offset, sigma_x)
+        self.spc_manager.update_imsd_list(sigma)
     
     def calculate_STICS_curve_fit(self, data_amplitude, x, y, data) -> tuple[float, float]:
         initial_guess = (data_amplitude, N_PIXEL / 2, N_PIXEL / 2, 5, 5, 0)
         xdata = np.vstack((x.ravel(), y.ravel()))
         
         popt, pcov = curve_fit(
-            twoD_Gauss, 
+            gaussian, 
             xdata, 
             data.flatten(), 
             p0 = initial_guess, 
             sigma = np.repeat(5, len(data.flatten()))
         )
+        
+        # imsd here
+        self.compute_IMSD_radius(popt)
+        
         return popt[0], (pcov[0][0] ** 0.5)
         
     def initialize_space_correlation_manager(self) -> None:
         plt.close()
         frames = self.spc_manager.get_corr_function_frames
         
-        fig = plt.figure(figsize = [10, 5], dpi = DPI) # type: ignore
+        fig = plt.figure(figsize = [15, 5], dpi = DPI) # type: ignore
         
-        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-        ax2 = fig.add_subplot(1, 2, 2)
+        ax1 = fig.add_subplot(1, 3, 1, projection='3d')
+        ax2 = fig.add_subplot(1, 3, 2)
+        ax3 = fig.add_subplot(1, 3, 3)
         data_amplitude = frames[0].max()
         ax1.set_zlim(0, data_amplitude + 2)
 
@@ -264,12 +342,17 @@ class PlotGenerator:
             self.spc_manager.update_peak_decay_list(amplitude, amplitude_error)
                 
             if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-                self.save_figure_at_critical_frame_number(fig, False, frame_number, True)
+                self.save_figure_at_critical_frame_number(fig, True, frame_number, True)
                 if frame_number == ANIMATION_FRAMES - 1:
                     self.show_peak_decay_plots(
                         ax2, 
                         self.spc_manager.get_peak_decay_list(), 
                         self.spc_manager.get_peak_decay_list_error()
+                    )
+                    self.show_imsd_plot(
+                        ax3, 
+                        self.spc_manager.get_imsd_list(),
+                        True
                     )
             return frames
         
@@ -309,7 +392,7 @@ class PlotGenerator:
         self.image_manager.increment_image_counter()
         
         if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-            self.save_figure_at_critical_frame_number(self.fig, False, frame_number, False)
+            self.save_figure_at_critical_frame_number(self.fig, True, frame_number, False)
         
         return self.path_plots
 

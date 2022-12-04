@@ -10,6 +10,7 @@ class SpaceCorrelationManager(ImageManager):
         self.corr_function_frames: list[FloatMatrix] = self.get_frames()
         self.peak_decay_list: list[float] = []
         self.peak_decay_list_error: list[float] = []
+        self.imsd_list: list[float] = []
         
     @property
     def get_corr_function_frames(self):
@@ -75,8 +76,14 @@ class SpaceCorrelationManager(ImageManager):
         self.peak_decay_list.append(amplitude)
         self.peak_decay_list_error.append(amplitude_error)
         
+    def update_imsd_list(self, sigma: float):
+        self.imsd_list.append(sigma ** 2)
+        
     def get_peak_decay_list(self) -> list[float]:
         return self.peak_decay_list
     
     def get_peak_decay_list_error(self) -> list[float]:
         return self.peak_decay_list_error
+    
+    def get_imsd_list(self) -> list[float]:
+        return self.imsd_list

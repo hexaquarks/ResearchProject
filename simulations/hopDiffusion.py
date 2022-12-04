@@ -1,4 +1,6 @@
 import util
+import random
+import numpy as np
 
 from simulations.simulation import *
 
@@ -6,7 +8,7 @@ BOUNDARY_THICKNESS: int = 100
 NUMBER_OF_COMPARTMENTS_PER_DIRECTION: int = 3
 BOUNDARY_JUMP: int = BOUNDARY_THICKNESS
 BOUNDARY_OVERFLOW: int = 140
-HOP_PROBABILITY_PERCENTAGE: float = 0.05
+HOP_PROBABILITY_PERCENTAGE: float = 0.1
 
 
 class HopDiffusion(Simulation):
@@ -22,7 +24,7 @@ class HopDiffusion(Simulation):
         for i in range(6):
             dynamic_step = step
             if i % 3 == 0: continue
-            if i == 2 or i == 5: dynamic_step = step * 1.05
+            if i == 2 or i == 5: dynamic_step = step * 0.85
             
             horizontal = i < NUMBER_OF_COMPARTMENTS_PER_DIRECTION
             curr = i * dynamic_step if horizontal else (i - NUMBER_OF_COMPARTMENTS_PER_DIRECTION) * dynamic_step
@@ -34,6 +36,15 @@ class HopDiffusion(Simulation):
 
             self.boundary_coordinates_for_plot.append((x, y, width, height))
             self.boundary_coordinates.append(((x, x + width), (y, y + height)))
+        # quick ugly implementation, will prettify at another time
+        self.boundary_coordinates_for_plot.append((-1200, -1740, 100, 3480))
+        self.boundary_coordinates.append(((-1200, -1100), (-1740, -1740 + 3480)))
+        self.boundary_coordinates_for_plot.append((860, -1740, 100, 3480))
+        self.boundary_coordinates.append(((860, 960), (-1740, -1740 + 3480)))
+        self.boundary_coordinates_for_plot.append((-1740, 560, 3480, 100))
+        self.boundary_coordinates.append(((-1740, -1740 + 3480), (560, 660)))
+        self.boundary_coordinates_for_plot.append((-1740, -1100, 3480, 100))
+        self.boundary_coordinates.append(((-1740, -1740 + 3480), (-1100, -1000)))
 
     @staticmethod
     def can_particle_hop_boundary_probability() -> bool:
@@ -99,7 +110,14 @@ class HopDiffusion(Simulation):
         assert not self.is_particle_on_boundary((x, y))
 
         diffusion_factor = MEMBRANE_DIFFUSION_FACTOR_CORRECTED
-        x_dir, y_dir = [util.get_random_normal_direction() * diffusion_factor for _ in range(2)]
+        bound_value = float(BOUNDARY_THICKNESS / diffusion_factor)
+        x_dir, y_dir = [
+            util.bound_number(
+                -bound_value, 
+                bound_value, 
+                util.get_random_normal_direction()
+            ) * diffusion_factor for _ in range(2)
+        ]
         new_pos = x + x_dir, y + y_dir
 
         if self.is_particle_on_boundary(new_pos):
