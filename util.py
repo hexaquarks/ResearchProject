@@ -16,9 +16,12 @@ def get_y_coordinates(path: list[tuple[float, float]]) -> list[float]:
     return list(list(zip(*path))[1])
 
 def get_random_normal_direction() -> float:
-    # a =  np.random.normal(0, 1 / 2) 
+    # a =  np.random.normal(0, 1 / 3) 
     # if a < 0 : a = a * -1
-    return np.random.normal(0, 1 / 2) 
+    return np.random.normal(0, 1 / 3) 
+
+def bound_number(low: float, high: float, value: float) -> float:
+    return max(low, min(high, value))
 
 def is_point_within_bounds(
     pos: tuple[float, float],
