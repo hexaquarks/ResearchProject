@@ -25,7 +25,7 @@ CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
 )
 
-ANIMATION_FRAMES: int = 200
+ANIMATION_FRAMES: int = 5
 ANIMATION_INTERVAL: int = int(TIME_PER_FRAME * 1000) # second to millisecond
 
 def handle_nanodomain(ax: plt.Axes, sim: Nanodomain) -> None:
@@ -59,6 +59,9 @@ def get_coordinates_for_heads(sim, idx: int):
 
 def get_matrix_for_plot(image_manager: ImageManager):
     return image_manager.calculate_matrix()
+
+def is_animation_ended(frame_number: int) -> bool:
+    return frame_number + 1 == ANIMATION_FRAMES
     
 def gaussian(xy, amplitude, x0, y0, sigma_x, sigma_y, offset):
     x, y = xy
@@ -102,6 +105,8 @@ def IMSD_confined_fit_func(t, L, tau_c, D, sigma_0_squared) -> float:
 class PlotGenerator:
     def __init__(self, sim: Simulation, image_manager: ImageManager):
         self.fig, self.ax = plt.subplots(1, 2, figsize = [10, 5], dpi = DPI, gridspec_kw={'wspace' : 0.2}) # type: ignore
+        self.STICS_fig, self.STICS_axins = None, None # deifne later 
+        
         self.sim = sim
         self.image_manager = image_manager
         self.spc_manager = None 
@@ -113,6 +118,15 @@ class PlotGenerator:
         self.adjust_colorbar()
         self.transform_image_axes()
 
+    def initialize_STICS_figure_and_axins(self) -> None:    
+        self.STICS_fig = plt.figure(figsize = [15, 5], dpi = DPI) # type: ignore    
+        
+        ax1 = self.STICS_fig.add_subplot(1, 3, 1, projection='3d')
+        ax2 = self.STICS_fig.add_subplot(1, 3, 2)
+        ax3 = self.STICS_fig.add_subplot(1, 3, 3)
+        
+        self.STICS_axins = list([ax1, ax2, ax3])
+    
     def generate_figure_elements(self):
         path_plots = [
             self.ax[0].plot(
@@ -314,52 +328,48 @@ class PlotGenerator:
         
         return popt[0], (pcov[0][0] ** 0.5)
         
-    def initialize_space_correlation_manager(self) -> None:
+    def start_STICS_animation(self) -> None:
         plt.close()
         frames = self.spc_manager.get_corr_function_frames
         
-        fig = plt.figure(figsize = [15, 5], dpi = DPI) # type: ignore
-        
-        ax1 = fig.add_subplot(1, 3, 1, projection='3d')
-        ax2 = fig.add_subplot(1, 3, 2)
-        ax3 = fig.add_subplot(1, 3, 3)
+        self.initialize_STICS_figure_and_axins()
         data_amplitude = frames[0].max()
-        ax1.set_zlim(0, data_amplitude + 2)
+        self.STICS_axins[0].set_zlim(0, data_amplitude + 2)
 
         data = frames[0]    
         X, Y = np.meshgrid(
             range(len(frames[0])),
             range(len(frames[0][0]))
         )  
-        plot_corr = self.show_STICS_plot(ax1, X, Y, data)
+        plot_corr = self.show_STICS_plot(self.STICS_axins[0], X, Y, data)
         
         def update_STICS_animation(frame_number): 
             data = frames[frame_number] 
             plot_corr[0].remove()
-            plot_corr[0] = self.show_STICS_plot(ax1, X, Y, data)[0]
+            plot_corr[0] = self.show_STICS_plot(self.STICS_axins[0], X, Y, data)[0]
             amplitude, amplitude_error = self.calculate_STICS_curve_fit(data_amplitude, X, Y, data)
             
             self.spc_manager.update_peak_decay_list(amplitude, amplitude_error)
                 
             if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-                self.save_figure_at_critical_frame_number(fig, True, frame_number, True)
-                if frame_number == ANIMATION_FRAMES - 1:
+                if is_animation_ended(frame_number):
                     self.show_peak_decay_plots(
-                        ax2, 
+                        self.STICS_axins[1], 
                         self.spc_manager.get_peak_decay_list(), 
                         self.spc_manager.get_peak_decay_list_error()
                     )
                     self.show_imsd_plot(
-                        ax3, 
+                        self.STICS_axins[2], 
                         self.spc_manager.get_imsd_list(),
-                        True
+                        False
                     )
+                self.save_figure_at_critical_frame_number(self.STICS_fig, True, frame_number, True)
             return frames
         
         def initialize_STICS_animation(): return frames
         
         animation = FuncAnimation(
-            fig = fig,
+            fig = self.STICS_fig,
             func = update_STICS_animation,
             init_func = initialize_STICS_animation,
             interval = ANIMATION_INTERVAL,
@@ -376,10 +386,9 @@ class PlotGenerator:
 
     def update_animation(self, frame_number):
         print(frame_number)
-        if frame_number + 1 == ANIMATION_FRAMES: 
+        if is_animation_ended(frame_number):
             self.spc_manager = SpaceCorrelationManager(self.image_manager)
-            #util.export_images_to_tiff(self.image_manager.intensity_matrices_without_background)
-            
+        
         self.sim.update()
         for i, axes in enumerate(self.path_plots):
             coords = get_coordinates_for_plot(self.sim, i)
