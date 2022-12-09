@@ -62,6 +62,11 @@ def get_matrix_for_plot(image_manager: ImageManager):
 
 def is_animation_ended(frame_number: int) -> bool:
     return frame_number + 1 == ANIMATION_FRAMES
+
+def is_animation_frame_at_critical_number(frame_number: int) -> bool:
+    return (frame_number == 0 or 
+            frame_number == ANIMATION_FRAMES / 2 or 
+            frame_number == ANIMATION_FRAMES - 1)
     
 def gaussian(xy, amplitude, x0, y0, sigma_x, sigma_y, offset):
     x, y = xy
@@ -327,42 +332,51 @@ class PlotGenerator:
         self.compute_IMSD_radius(popt)
         
         return popt[0], (pcov[0][0] ** 0.5)
+    
+    def show_STICS_complementary_plots_if_animation_is_ended(self, frame_number: int) -> None:
+        if is_animation_ended(frame_number):
+            self.show_peak_decay_plots(
+                self.STICS_axins[1], 
+                self.spc_manager.get_peak_decay_list(), 
+                self.spc_manager.get_peak_decay_list_error()
+            )
+            self.show_imsd_plot(
+                self.STICS_axins[2], 
+                self.spc_manager.get_imsd_list(),
+                False
+            )
+                
+    def set_STICS_axin_range_limit(self, amplitude_of_STICS_function_at_first_frame: float) -> None:
+        self.STICS_axins[0].set_zlim(0, amplitude_of_STICS_function_at_first_frame + 2)
         
     def start_STICS_animation(self) -> None:
         plt.close()
         frames = self.spc_manager.get_corr_function_frames
+        current_frame = frames[0]    
+        amplitude_of_STICS_function_at_first_frame = current_frame.max()
         
         self.initialize_STICS_figure_and_axins()
-        data_amplitude = frames[0].max()
-        self.STICS_axins[0].set_zlim(0, data_amplitude + 2)
+        self.set_STICS_axin_range_limit(amplitude_of_STICS_function_at_first_frame)
 
-        data = frames[0]    
-        X, Y = np.meshgrid(
-            range(len(frames[0])),
-            range(len(frames[0][0]))
-        )  
-        plot_corr = self.show_STICS_plot(self.STICS_axins[0], X, Y, data)
+        X_cells, Y_cells = np.meshgrid( range(len(current_frame)), range(len(current_frame[0])))  
+        STICS_surface_plots = self.show_STICS_plot(self.STICS_axins[0], X_cells, Y_cells, current_frame)
         
         def update_STICS_animation(frame_number): 
-            data = frames[frame_number] 
-            plot_corr[0].remove()
-            plot_corr[0] = self.show_STICS_plot(self.STICS_axins[0], X, Y, data)[0]
-            amplitude, amplitude_error = self.calculate_STICS_curve_fit(data_amplitude, X, Y, data)
+            current_frame = frames[frame_number] 
+            STICS_surface_plots[0].remove()
+            STICS_surface_plots[0] = self.show_STICS_plot(self.STICS_axins[0], X_cells, Y_cells, current_frame)[0]
+            
+            amplitude, amplitude_error = self.calculate_STICS_curve_fit(
+                amplitude_of_STICS_function_at_first_frame, 
+                X_cells, 
+                Y_cells, 
+                current_frame
+            )
             
             self.spc_manager.update_peak_decay_list(amplitude, amplitude_error)
-                
-            if frame_number == 0 or frame_number == ANIMATION_FRAMES / 2 or frame_number == ANIMATION_FRAMES - 1:
-                if is_animation_ended(frame_number):
-                    self.show_peak_decay_plots(
-                        self.STICS_axins[1], 
-                        self.spc_manager.get_peak_decay_list(), 
-                        self.spc_manager.get_peak_decay_list_error()
-                    )
-                    self.show_imsd_plot(
-                        self.STICS_axins[2], 
-                        self.spc_manager.get_imsd_list(),
-                        False
-                    )
+            
+            if is_animation_frame_at_critical_number(frame_number):
+                self.show_STICS_complementary_plots_if_animation_is_ended(frame_number)
                 self.save_figure_at_critical_frame_number(self.STICS_fig, True, frame_number, True)
             return frames
         
