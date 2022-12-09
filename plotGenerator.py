@@ -13,13 +13,17 @@ from scipy.optimize import curve_fit, fsolve
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import numpy.typing as np_t
 import numpy as np
 import util
 
+FloatMatrix = np_t.NDArray[np.float32]
 path_colors2: tuple[str, ...] = ('r', 'b', 'orange', 'g', 'y', 'c', 'tan', 'lime', 'brown', 'navy')
 markers: tuple[str, ...] = ('o', 'v', '<', '>', 's', 'p')
 
 NM_IN_BETWEEN_AXIS_TICKS = 800
+CONFINEMENT_WIDTH = 700 # in nm
+LASER_RADIUS = 350 # in nm
 N_PIXEL = 32
 CMAP = colors.LinearSegmentedColormap.from_list(
     'my_colormap', ['black','green','white'], 128
@@ -205,30 +209,55 @@ class PlotGenerator:
     def IMSD_confined_fit_func(t, L, tau_c, D, sigma_0_squared) -> float:
         return (L ** 2 / 3) * (1 - np.exp(- t / tau_c)) + 4 * D * t + sigma_0_squared
 
-    def show_imsd_plot(self, ax: plt.Axes , imsd_list: list[float], is_confined: bool):
-        n_peaks = len(imsd_list)
-        scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
-        fit_linspace = np.linspace(0, n_peaks, 50)
-        
+    def get_diffusion_through_curve_fit_for_IMSD(
+        self, 
+        frame_numbers: list[int], 
+        imsd_list: list[float], 
+        is_confined: bool
+    ) -> tuple[array, float, float]:
         D, D_error = 0, 0
+        popt = None
         
         if is_confined:
             initial_guess = (0.1, 1.5, 9)
             popt, pcov = curve_fit(
-                lambda t, tau_c, D, sigma_0_squared: IMSD_confined_fit_func(t, 700, tau_c, D, sigma_0_squared),
-                scatter_plot_frame_numbers, imsd_list, p0 = initial_guess,
+                lambda t, tau_c, D, sigma_0_squared: 
+                    IMSD_confined_fit_func(
+                        t, 
+                        CONFINEMENT_WIDTH, 
+                        tau_c, 
+                        D, 
+                        sigma_0_squared
+                    ),
+                frame_numbers,
+                imsd_list, 
+                p0 = initial_guess,
                 maxfev = 5000
             )
             D, D_error = popt[1], pcov[1][1] ** 0.5
-            print(f'D is {D} , D_error {D_error}')
         else:
             initial_guess = (1.5, 25)
             popt, pcov = curve_fit(
                 IMSD_brownian_fit_func,
-                scatter_plot_frame_numbers, imsd_list, p0 = initial_guess
+                frame_numbers, imsd_list, p0 = initial_guess
             )
             D, D_error = popt[0], pcov[0][0] ** 0.5
-            print(f'D is {D} , D_error {D_error}')
+        return popt, D, D_error
+    
+    def show_IMSD_plot(
+        self, 
+        ax: plt.Axes , 
+        imsd_list: list[float], 
+        is_confined: bool
+    ) -> None:
+        n_peaks = len(imsd_list)
+        scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
+        fit_linspace = np.linspace(0, n_peaks, 50)
+        
+        popt, D, D_error = self.get_diffusion_through_curve_fit_for_IMSD(
+            scatter_plot_frame_numbers, imsd_list, is_confined
+        )
+        print(f'D is {D} , D_error {D_error}')
         
         ax.plot(
             scatter_plot_frame_numbers,
@@ -238,14 +267,19 @@ class PlotGenerator:
         )
         ax.plot(
             fit_linspace,
-            IMSD_confined_fit_func(fit_linspace, 700, *popt) if is_confined else IMSD_brownian_fit_func(fit_linspace, *popt), 
+            IMSD_confined_fit_func(fit_linspace, CONFINEMENT_WIDTH, *popt) if is_confined else IMSD_brownian_fit_func(fit_linspace, *popt), 
             'r--',
             label = 'Confined fit' if is_confined else 'Unconfined fit'
         )
-            
-        ax.legend(loc = 'upper left')
+        self.prettify_STICS_complementary_plot(ax, True)
+        
+    def prettify_STICS_complementary_plot(self, ax: plt.Axes, is_imsd_plot: bool):
+        ax.legend(loc = 'upper right')
         ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
-        ax.set_ylabel(r"$\sigma_r^2(\tau)$", fontsize = 14)
+        ax.set_ylabel(
+            r"$\sigma_r^2(\tau)$" if is_imsd_plot else r"$G(0, 0, \tau)$",
+            fontsize = 14
+        )
         formatted_ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * TIME_PER_FRAME))
         ax.xaxis.set_major_formatter(formatted_ticks)
         ax.patch.set_edgecolor('black')
@@ -253,20 +287,33 @@ class PlotGenerator:
         ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
         ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
         
-    def show_peak_decay_plots(self, ax: plt.Axes, peak_decay_list: list[float], peak_decay_list_error: list[float]):
+    def show_peak_decay_plots(
+        self, 
+        ax: plt.Axes, 
+        peak_decay_list: list[float], 
+        peak_decay_list_error: list[float]
+    ) -> None:
         n_peaks = len(peak_decay_list)
         scatter_plot_frame_numbers = np.arange(0, n_peaks, 1)
-        
-        polyfit_function = np.poly1d(np.polyfit(scatter_plot_frame_numbers, peak_decay_list, 3))
-        polyfit_linspace = np.linspace(0, n_peaks, 50)
+        hyperbolic_fit_linspace = np.linspace(0, n_peaks, 50)
         
         initial_guess = (0.02, 0)
         popt, pcov = curve_fit(
-            lambda x, tau, offset: hyperbolic_fit(x, peak_decay_list[0], tau, offset), scatter_plot_frame_numbers, peak_decay_list, p0 = initial_guess
+            lambda x, tau, offset: 
+                hyperbolic_fit(
+                    x, 
+                    peak_decay_list[0], 
+                    tau, 
+                    offset
+                ), 
+            scatter_plot_frame_numbers, 
+            peak_decay_list, 
+            p0 = initial_guess
         )
+        
         tau = popt[0]
         tau_error = pcov[0][0] ** 0.5
-        D, D_error = get_STICS_diffusion_coefficient(tau, tau_error, 350, 0)
+        D, D_error = get_STICS_diffusion_coefficient(tau, tau_error, LASER_RADIUS, 0)
         print(f'D_stics is {D}, D_stics_error is {D_error}')
         
         ax.errorbar(
@@ -277,37 +324,30 @@ class PlotGenerator:
             fmt = 'ko', 
             label = 'STICS function peaks'
         )
-        # ax.plot(
-        #     polyfit_linspace,
-        #     polyfit_function(polyfit_linspace), 
-        #     'r--',
-        #     label = 'polynomial fit'
-        # )
         ax.plot(
-            polyfit_linspace,
-            hyperbolic_fit(polyfit_linspace, peak_decay_list[0], *popt), 
+            hyperbolic_fit_linspace,
+            hyperbolic_fit(hyperbolic_fit_linspace, peak_decay_list[0], *popt), 
             'b--',
             label = 'hyperbolic fit'
         )
-        
-        ax.legend(loc = 'upper right')
-        ax.set_xlabel(r"$\tau \ (s)$", fontsize = 14)
-        ax.set_ylabel(r"$G(0, 0, \tau)$", fontsize = 14)
-        formatted_ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * TIME_PER_FRAME))
-        ax.xaxis.set_major_formatter(formatted_ticks)
-        ax.patch.set_edgecolor('black')
-        ax.patch.set_linewidth(2)
-        ax.tick_params(axis = 'y', direction = "in", right = True, labelsize = 16, pad = 20)
-        ax.tick_params(axis = 'x', direction = "in", top = True, bottom = True, labelsize = 16, pad = 20)
+        self.prettify_STICS_complementary_plot(ax, False)
 
-    def show_STICS_plot(self, ax, x, y, data) -> list[plt.Axes]:
-        plot = [ax.plot_trisurf(x.flatten(), y.flatten(), data.flatten(), cmap=cm.jet,
-                       linewidth = 0.75, edgecolor='black')]
+    def show_STICS_plot(self, ax: plt.Axes, x, y, data: FloatMatrix) -> list[plt.Axes]:
+        plot = [
+            ax.plot_trisurf(
+                x.flatten(), 
+                y.flatten(), 
+                data.flatten(), 
+                cmap=cm.jet, linewidth = 0.75, edgecolor = 'black'
+            )
+        ]
+        
         ax.set_xlabel(r"$\zeta$", fontsize = 14)
         ax.set_ylabel(r"$\eta$", fontsize = 14)
         ax.grid(False)
         ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
         ax.set_axis_off()
+        
         return plot
     
     def compute_IMSD_radius(self, popt: list):
@@ -340,7 +380,7 @@ class PlotGenerator:
                 self.spc_manager.get_peak_decay_list(), 
                 self.spc_manager.get_peak_decay_list_error()
             )
-            self.show_imsd_plot(
+            self.show_IMSD_plot(
                 self.STICS_axins[2], 
                 self.spc_manager.get_imsd_list(),
                 False
